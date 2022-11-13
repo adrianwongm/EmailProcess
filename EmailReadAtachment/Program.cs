@@ -11,28 +11,57 @@ using GemBox.Email.Pop;
 using GemBox.Email.Smtp;
 using GemBox.Email.Security;
 using GemBox.Spreadsheet;
+using System.Configuration;
+using System.Threading;
 
 namespace EmailReadAtachment
 {
+    public enum ResponseEmailType
+    {
+        None = 0,   
+        Recibido=1
+    }
     internal class Program
     {
-        static void Main(string[] args)
+        static string cfgImapClient = ConfigurationManager.AppSettings["ImapClient"];
+        static string cfgUserClient = ConfigurationManager.AppSettings["UserClient"];
+        static string cfgEmailClient = ConfigurationManager.AppSettings["EmailClient"];
+        static string cfgPasswordClient = ConfigurationManager.AppSettings["PasswordClient"];
+        static string cfgSubject = ConfigurationManager.AppSettings["Subject"];
+        static string cfgExtensionFile = ConfigurationManager.AppSettings["ExtensionFile"];
+        static string cfgPathFile = ConfigurationManager.AppSettings["PathFile"];
+        static string cfgSubjectResponseForReceive = ConfigurationManager.AppSettings["SubjectResponseForReceive"];
+        static string cfgBodyTextForReceive = ConfigurationManager.AppSettings["BodyTextForReceive"];
+        public static  void Main(string[] args)
         {
             // If using Professional version, put your serial key below.
             ComponentInfo.SetLicense("FREE-LIMITED-KEY");
 
             // Create IMAP client.
             // 993 SSL
-            using (var imap = new ImapClient("swissmail.swissoil.local"))
-            //using (var imap = new ImapClient("201.234.220.12", 143))
+       
+            using (var imap = new ImapClient(cfgImapClient)) 
             {
-               
+
+                procesarExcel("C:\\Users\\Adria\\source\\repos\\EmailReadAtachment\\EmailReadAtachment\\archivos\\2022-48-12-22-48-45_PedidosCONAUTO.xls");
                 //  Connect and sign to IMAP server.
                 imap.Connect();
-                imap.Authenticate("ruanotv", ".$circ6HAVO7");  //ruanotv@swissoil.com.ec
+                imap.Authenticate(cfgUserClient, cfgPasswordClient);  //ruanotv@swissoil.com.ec
 
                 // Select INBOX folder.
                 imap.SelectInbox();
+               // RespuestaEmail("adrian.wong.m@gmail.com", ResponseEmailType.Recibido);
+                using (var listener = new ImapListener(imap))
+                {
+                    listener.MessagesChanged += OnMessagesChanged;
+                    imap.IdleEnable();
+
+                    Console.WriteLine("Press any key to exit...");
+                    Console.ReadKey();
+
+                    imap.IdleDisable();
+                    listener.MessagesChanged -= OnMessagesChanged;
+                }
 
                 // Read the number of currently available emails in selected mailbox folder.
                 int count = imap.SelectedFolder.Count;
@@ -40,91 +69,211 @@ namespace EmailReadAtachment
                 Console.WriteLine(" NO. |     DATE     |          SUBJECT          ");
                 Console.WriteLine("------------------------------------------------");
 
-                // Download and receive all email messages from selected mailbox folder.
-                //for (int number = 1; number <= count; number++)
-                for (int number = count; number > 0; number--)
+                IList<ImapMessageInfo> infos = imap.ListMessages();
+
+                // Display messages information.
+                foreach (ImapMessageInfo info in infos)
+                    Console.WriteLine($"{info.Number} - [{info.Flags}] - [{info.Uid}] - {info.Size} Byte(s)");
+                // List INBOX folder flags.
+                IList<ImapFolderInfo> folders = imap.ListFolders();
+                foreach (string flag in imap.SelectedFolder.Flags)
+                    Console.WriteLine(flag);
+                IList<int> messages = imap.SearchMessageNumbers("SUBJECT \"" + cfgSubject+ "\"");
+                Console.WriteLine($"Number of messages with 'Example' in subject: {messages.Count}");
+
+            }
+        }
+
+        static void OnMessagesChanged(object sender, ImapListenerEventArgs e)
+        {
+            foreach (var info in e.NewMessages)
+            {
+                Console.WriteLine($"Message '{info.Uid}' received.");
+                var cliente = (((EmailReadAtachment.ImapListener)sender)).client;
+                var message = cliente.GetMessage(info.Uid);
+                if (message.Subject.Contains(cfgSubject))
                 {
-                    GemBox.Email.MailMessage message = imap.GetMessage(number);
-
-                    // Read and display email's date and subject.
-                    if(message.Subject== "PEDIDOS DE CLIENTES SWISSOIL" || message.Subject == "PEDIDOS DE CLIENTE SWISSOIL")
+                    foreach (var item in message.Attachments)
                     {
-                        Console.WriteLine($"  {number}  |  {message.Date.ToShortDateString()}  |  {message.Subject}");
-                        foreach (var item in message.Attachments)
+                        if (!string.IsNullOrEmpty(item.FileName) && item.FileName.Contains(cfgExtensionFile))
                         {
-                            if (!string.IsNullOrEmpty(item.FileName) && item.FileName.Contains(".xls"))
+                            Console.WriteLine($"  {info.Number}  |  {message.Date.ToShortDateString()}  |  {message.Subject}");
+                            System.IO.FileInfo file = new System.IO.FileInfo(item.FileName);
+                            if (file.Extension == ".xls" || file.Extension == ".xlsx" || file.Extension == ".xlsm") //Tipos de archivos de excel
                             {
-                                System.IO.FileInfo file = new System.IO.FileInfo(item.FileName);
-                                if (file.Extension == ".xls" || file.Extension == ".xlsx" || file.Extension == ".xlsm")
+                                var nombreFinalArchivo = cfgPathFile + System.DateTime.Now.ToString("yyyy-mm-dd-HH-mm-ss") + "_" + item.FileName;
+                                item.Save(nombreFinalArchivo);
+                                //Validar arhivo
+                                System.IO.FileInfo excel = new System.IO.FileInfo(nombreFinalArchivo);
+                                if (excel.Exists)
                                 {
-                                    var nombreFinalArchivo = "C:\\Users\\Adria\\source\\repos\\EmailReadAtachment\\EmailReadAtachment\\archivos\\" + System.DateTime.Now.ToString("yyyy-mm-dd-HH-mm-ss") + "_" + item.FileName;
-                                    item.Save(nombreFinalArchivo) ;
-                                    //Validar arhivo
-                                    System.IO.FileInfo excel = new System.IO.FileInfo(nombreFinalArchivo);
-
-                                    //Responder correo
-                                    GemBox.Email.MailMessage messageReponse = new GemBox.Email.MailMessage(
-                                                new GemBox.Email.MailAddress("ruanotv@swissoil.com.ec", "Sender"),
-                                                 new GemBox.Email.MailAddress(message.From[0].Address, "First receiver"));
-                                    messageReponse.Subject = "Notificacion de archivo recibido";
-                                    messageReponse.BodyText = "Archivo recibido, próximamente lo procesaremos.";
-                                    SpreadsheetInfo.SetLicense("FREE-LIMITED-KEY");
-
-                                    // Load Excel workbook from file's path.
-                                    ExcelFile workbook = ExcelFile.Load(nombreFinalArchivo);
-
-                                    // Iterate through all worksheets in a workbook.
-                                    foreach (ExcelWorksheet worksheet in workbook.Worksheets)
-                                    {
-                                        // Display sheet's name.
-                                        Console.WriteLine("{1} {0} {1}\n", worksheet.Name, new string('#', 30));
-
-                                        // Iterate through all rows in a worksheet.
-                                        foreach (ExcelRow row in worksheet.Rows)
-                                        {
-                                            // Iterate through all allocated cells in a row.
-                                            foreach (ExcelCell cell in row.AllocatedCells)
-                                            {
-                                                // Read cell's data.
-                                                string value = cell.Value?.ToString() ?? "EMPTY";
-
-                                                // Display cell's value and type.
-                                                value = value.Length > 15 ? value.Remove(15) + "…" : value;
-                                                Console.Write($"{value} [{cell.ValueType}]".PadRight(30));
-                                            }
-
-                                            Console.WriteLine();
-                                        }
-                                    }
-
-
-                                    /*using (var smtp = new GemBox.Email.Smtp.SmtpClient("swissmail.swissoil.local",25,ConnectionSecurity.None))
-                                    {
-                                        //  Connect and sign to the SMTP server.
-                                        smtp.Connect();
-                                        smtp.Authenticate("ruanotv", ".$circ6HAVO7");
-
-                                        // Create and send a new email.
-                                        var messager2 = new GemBox.Email.MailMessage(); 
-                                        smtp.SendMessage(messager2);
-                                    }*/
-
-                                    new System.Net.Mail.SmtpClient
-                                    {
-                                        Host = "swissmail.swissoil.local",
-                                       // Port = 587,
-                                        EnableSsl = false,
-                                        DeliveryMethod = SmtpDeliveryMethod.Network,
-                                        UseDefaultCredentials = false,
-                                        Credentials = new NetworkCredential("ruanotv", ".$circ6HAVO7")
-                                    }.Send(new System.Net.Mail.MailMessage("ruanotv@swissoil.com.ec", message.From[0].Address) { Subject = messageReponse.Subject, Body = messageReponse.BodyText });
-                                    //
+                                    var receiver = message.From[0].Address;
+                                    var respuestaEnvio = RespuestaEmail(receiver, ResponseEmailType.Recibido);
+                                    procesarExcel(excel.FullName);
                                 }
                             }
+
                         }
-                    } 
+                    }
+
                 }
             }
+               
+
+            foreach (var info in e.OldMessages)
+                Console.WriteLine($"Message '{info.Uid}' deleted.");
+        }
+
+        static  bool RespuestaEmail(string receiver, ResponseEmailType responseEmailType)
+        {
+            try
+            {
+                //Responder correo
+                GemBox.Email.MailMessage messageReponse = new GemBox.Email.MailMessage(
+                            new GemBox.Email.MailAddress(cfgEmailClient, "Sender"),
+                             new GemBox.Email.MailAddress(receiver, "First receiver"));
+                if (responseEmailType == ResponseEmailType.Recibido)
+                {
+                    messageReponse.Subject = cfgSubjectResponseForReceive;
+                    messageReponse.BodyText = cfgBodyTextForReceive;
+                } 
+                /*var mailSender = new System.Net.Mail.SmtpClient
+                {
+                    Host = cfgImapClient,
+                    // Port = 587,
+                    EnableSsl = false,
+                    DeliveryMethod = SmtpDeliveryMethod.Network,
+                    UseDefaultCredentials = false,
+                    Credentials = new NetworkCredential(cfgUserClient, cfgPasswordClient)
+                };
+                mailSender.Send(new System.Net.Mail.MailMessage(cfgEmailClient, receiver) { Subject = messageReponse.Subject, Body = messageReponse.BodyText });*/
+                using (GemBox.Email.Smtp.SmtpClient smtp = new GemBox.Email.Smtp.SmtpClient(cfgImapClient,25, ConnectionSecurity.None))
+                {
+                    smtp.Connect();
+                    smtp.Authenticate(cfgUserClient, cfgPasswordClient);
+                    smtp.SendMessage(messageReponse);
+                }
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            } 
+        }
+    
+       static void procesarExcel(string filePath)
+        {
+            try
+            {
+                SpreadsheetInfo.SetLicense("FREE-LIMITED-KEY");
+                ExcelFile workbook = ExcelFile.Load(filePath);
+                for (int sheetIndex = 0; sheetIndex < workbook.Worksheets.Count; sheetIndex++)
+                {
+                    ExcelWorksheet worksheet = workbook.Worksheets[sheetIndex];
+                    ExcelRow rowCliente = worksheet.Rows[0];
+                    ExcelRow rowClienteDireccion = worksheet.Rows[2];
+                    var valorCliente = rowCliente.Cells["C"].Value;
+                    var valorDireccionCliente = rowClienteDireccion.Cells["C"].Value;
+                    var rangoContenido = worksheet.Cells.GetSubrange("A6", "J73");
+                    CellRangeEnumerator enumerator = worksheet.Cells.GetReadEnumerator();
+                    while (enumerator.MoveNext())
+                    {
+                        ExcelCell cell = enumerator.Current;
+                        if (cell.Value.ToString().Contains("Moneda")){
+
+                        }
+                    }
+                    foreach (var celda in rangoContenido)
+                    {
+                        if (celda.Column.Name == "A")
+                        {
+
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+    }
+
+      class ImapListener : IDisposable
+    {
+        public readonly ImapClient client;
+        private Dictionary<string, ImapMessageInfo> messages;
+        private bool running;
+        private Thread listenerThread;
+
+        public event EventHandler<ImapListenerEventArgs> MessagesChanged;
+
+        public ImapListener(ImapClient client)
+        {
+            this.client = client;
+            this.messages = this.GetMessages();
+            this.running = true;
+            this.listenerThread = new Thread(Listen) { IsBackground = true };
+            this.listenerThread.Start();
+        }
+
+        private Dictionary<string, ImapMessageInfo> GetMessages()
+        {
+            return this.client.ListMessages().ToDictionary(info => info.Uid, info => info);
+        }
+
+        private void Listen()
+        {
+            while (this.running)
+            {
+                Thread.Sleep(100);
+
+                // Compare the previous and current message count of the selected folder.
+                int comparison = this.client.SelectedFolder.Count.CompareTo(this.messages.Count);
+                if (comparison == 0)
+                    continue;
+
+                var currentMessages = this.GetMessages();
+                var emptyMessages = Enumerable.Empty<ImapMessageInfo>();
+
+                // New message(s) was added.
+                if (comparison > 0)
+                {
+                    var newMessages = currentMessages
+                        .Where(message => !this.messages.ContainsKey(message.Key))
+                        .Select(message => message.Value);
+                    this.MessagesChanged?.Invoke(this, new ImapListenerEventArgs(newMessages, emptyMessages));
+                }
+                // Old message(s) was deleted.
+                else
+                {
+                    var oldMessages = this.messages
+                        .Where(message => !currentMessages.ContainsKey(message.Key))
+                        .Select(message => message.Value);
+                    this.MessagesChanged?.Invoke(this, new ImapListenerEventArgs(emptyMessages, oldMessages));
+                }
+
+                this.messages = currentMessages;
+            }
+        }
+
+        public void Dispose()
+        {
+            this.running = false;
+            this.listenerThread?.Join(5000);
+            this.listenerThread = null;
+        }
+    }
+
+    class ImapListenerEventArgs : EventArgs
+    {
+        public IEnumerable<ImapMessageInfo> NewMessages { get; }
+        public IEnumerable<ImapMessageInfo> OldMessages { get; }
+        public ImapListenerEventArgs(IEnumerable<ImapMessageInfo> newMessages, IEnumerable<ImapMessageInfo> oldMessages)
+        {
+            this.NewMessages = newMessages;
+            this.OldMessages = oldMessages;
         }
     }
 }
