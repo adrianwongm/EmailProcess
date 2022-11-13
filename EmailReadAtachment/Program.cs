@@ -174,22 +174,63 @@ namespace EmailReadAtachment
                     ExcelRow rowClienteDireccion = worksheet.Rows[2];
                     var valorCliente = rowCliente.Cells["C"].Value;
                     var valorDireccionCliente = rowClienteDireccion.Cells["C"].Value;
-                    var rangoContenido = worksheet.Cells.GetSubrange("A6", "J73");
-                    CellRangeEnumerator enumerator = worksheet.Cells.GetReadEnumerator();
+                    int limite = 200;
+                    var rangoContenido = worksheet.Cells.GetSubrange("A6", "J"+ limite);
+                    
+                    CellRangeEnumerator enumerator = rangoContenido.GetReadEnumerator();
+                    
                     while (enumerator.MoveNext())
                     {
                         ExcelCell cell = enumerator.Current;
-                        if (cell.Value.ToString().Contains("Moneda")){
-
+                        if (cell.Value!= null){
+                            if (cell.Value.ToString().Contains("Moneda"))
+                            {
+                                  limite = cell.Row.Index;
+                                  break;
+                            }
                         }
                     }
-                    foreach (var celda in rangoContenido)
+                    //Columnas de productos
+                    List<Tuple<string, decimal>> listaPedido= new List<Tuple<string, decimal>>();
+                    List<string> listaEnBlanco = new List<string>();
+                    var rangoCodigoProducto = worksheet.Cells.GetSubrange("A6", "A"+ limite);
+                    var rangoCantidadProducto = worksheet.Cells.GetSubrange("I6", "I" + limite);
+                    //rangoContenido = worksheet.Cells.GetSubrange("A6", "A" + limite);
+                    foreach (var celda in rangoCodigoProducto)
                     {
-                        if (celda.Column.Name == "A")
+                        bool blankRegister = true;
+                        if ( celda!= null)
                         {
-
+                            if(celda.ToString().Trim() != "")
+                            {
+                                var codigoProducto = celda.Value.ToString();
+                                var cantidadProducto = decimal.Parse(rangoCantidadProducto.Where(x => x.Column.Name == "I" && x.Row.Index == celda.Row.Index).FirstOrDefault().Value?.ToString());
+                                listaPedido.Add(new Tuple<string, decimal>(codigoProducto, cantidadProducto));
+                                blankRegister= false;
+                            } 
                         }
+                        if (blankRegister)
+                        {
+                            listaEnBlanco.Add(celda.Column.Name + "" +celda.Row.Index.ToString());
+                        }
+                        if(list)
                     }
+
+                    if(listaEnBlanco.Count>0)
+                    {
+                        //Notifcar registros en blancos
+                    }
+
+                    if (listaPedido.Count > 0)
+                    {
+                        //Procesar registros en blancos
+
+                    }
+                    else
+                    {
+                        //Notificar no hay detalle
+                    }
+
                 }
             }
             catch (Exception)
