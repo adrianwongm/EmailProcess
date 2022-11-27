@@ -213,7 +213,6 @@ namespace EmailReadAtachment
                         {
                             listaEnBlanco.Add(celda.Column.Name + "" +celda.Row.Index.ToString());
                         }
-                        if(list)
                     }
 
                     if(listaEnBlanco.Count>0)

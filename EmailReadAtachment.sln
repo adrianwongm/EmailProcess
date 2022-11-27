@@ -7,6 +7,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmailReadAtachment", "Email
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TA03", "TA03\TA03.csproj", "{58DE0927-E153-4535-A251-4A197A543D98}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TPCS_ORDER", "TPCS_ORDER\TPCS_ORDER.csproj", "{A52FCA0A-264B-4799-8B03-EDF0795FDD90}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TCPP2", "TCPP2\TCPP2.csproj", "{1857A239-3DB1-4B4F-9049-0F9CDAB99F2E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelReader", "ExcelReader\ExcelReader.csproj", "{E1B0A18B-70B5-44DE-B88C-F5BB00470742}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestExcel", "UnitTestExcel\UnitTestExcel.csproj", "{045CF46E-632A-414C-BA51-3A4D97E97950}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +29,22 @@ Global
 		{58DE0927-E153-4535-A251-4A197A543D98}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{58DE0927-E153-4535-A251-4A197A543D98}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{58DE0927-E153-4535-A251-4A197A543D98}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A52FCA0A-264B-4799-8B03-EDF0795FDD90}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A52FCA0A-264B-4799-8B03-EDF0795FDD90}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A52FCA0A-264B-4799-8B03-EDF0795FDD90}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A52FCA0A-264B-4799-8B03-EDF0795FDD90}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1857A239-3DB1-4B4F-9049-0F9CDAB99F2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1857A239-3DB1-4B4F-9049-0F9CDAB99F2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1857A239-3DB1-4B4F-9049-0F9CDAB99F2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1857A239-3DB1-4B4F-9049-0F9CDAB99F2E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1B0A18B-70B5-44DE-B88C-F5BB00470742}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1B0A18B-70B5-44DE-B88C-F5BB00470742}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1B0A18B-70B5-44DE-B88C-F5BB00470742}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1B0A18B-70B5-44DE-B88C-F5BB00470742}.Release|Any CPU.Build.0 = Release|Any CPU
+		{045CF46E-632A-414C-BA51-3A4D97E97950}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{045CF46E-632A-414C-BA51-3A4D97E97950}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{045CF46E-632A-414C-BA51-3A4D97E97950}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{045CF46E-632A-414C-BA51-3A4D97E97950}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
