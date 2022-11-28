@@ -41,8 +41,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
+    <Compile Include="TPCS_BLL.cs" />
+    <Compile Include="TPCS_ORDER.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TPDS.cs" />
+    <Compile Include="Utilidades.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\TA03\TA03.csproj">

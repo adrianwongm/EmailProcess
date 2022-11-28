@@ -46,8 +46,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArchivoConauto.cs" />
+    <Compile Include="ConverterHelpers.cs" />
     <Compile Include="Lector.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TPCS_ORDER\TPCS_ORDER.csproj">
+      <Project>{A52FCA0A-264B-4799-8B03-EDF0795FDD90}</Project>
+      <Name>TPCS_ORDER</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

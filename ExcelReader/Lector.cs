@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using TPCS_ORDER;
 
 namespace ExcelReader
 {
@@ -91,6 +92,7 @@ namespace ExcelReader
                   
                     IList<DetalleArchivoConauto> detalles = new List<DetalleArchivoConauto>(); 
                     var detalle = new DetalleArchivoConauto();
+                    int orden = 1;
                     foreach (var celda in rangoContenido)
                     {
                         //Verificacion fila registro completa
@@ -137,8 +139,11 @@ namespace ExcelReader
                         }
 
                         if (celda.Column.Name  == columnaRangoFinalValores) 
-                        { detalles.Add(detalle); limiteActual++; }
-                       
+                        {
+                            detalle.Orden = orden;
+                            detalles.Add(detalle); //limiteActual++;
+                            orden++;
+                        } 
                     }
                     if(detalles.Count<= 0) { ErrorList.Add("El archivo no tiene detalles"); }
                     detallado.Detalles = detalles.ToArray();
@@ -148,8 +153,10 @@ namespace ExcelReader
                         ErrorProcessList = ErrorList;
                         return;
                     }
-                    //ToAS400
-
+                    string usuario = ConfigurationManager.AppSettings["User"];
+                    var registro = detallado.ToAS400(usuario, 1);
+                    TPCS_BLL obj = new TPCS_BLL();
+                    var resp = obj.insertaRegistroTPCS(registro,"","");
                 }
             }
             catch (Exception)

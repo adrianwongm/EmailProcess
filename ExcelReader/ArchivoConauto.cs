@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using TPCS_ORDER;
+using static ExcelReader.ArchivoConauto;
 
 namespace ExcelReader
 {
@@ -19,11 +22,17 @@ namespace ExcelReader
         public class Detallado : ArchivoConauto
         {
             public DetalleArchivoConauto[] Detalles { get; set; }
+
+            
         }
+
+
+
     }
 
     public class DetalleArchivoConauto
     {
+        public int Orden { get; set; }
         public string  CodigoCONAUTO { get; set; }
         public string  CodigoSWISSOIL { get; set; }
         public string DescripcionProducto { get; set; }
@@ -33,6 +42,7 @@ namespace ExcelReader
 
     public class ArchivoConautoOperations
     {
+         
         public static class Validator
         {
             public static string _mensajeError;
@@ -57,4 +67,5 @@ namespace ExcelReader
 
         }
     }
+
 }
