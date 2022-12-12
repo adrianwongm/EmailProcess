@@ -11,7 +11,7 @@ namespace UnitTestExcel
         public void ReadExcel()
         {
             var pathExcel = $"C:\\Users\\Adria\\source\\repos\\EmailReadAtachment\\EmailReadAtachment\\archivos\\Formato.xls";
-            Lector.procesarExcel(pathExcel);
+            Lector.procesarExcel(pathExcel,"Excel");
              
         }
     }

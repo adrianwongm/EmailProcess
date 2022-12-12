@@ -39,6 +39,7 @@ internal static class ConverterHelpers
             TCHRES = DateTime.Now.ToIntFecha(TipoFecha.Hora),
             TCHRRE = DateTime.Now.ToIntFecha(TipoFecha.Hora),
             TCNMPE = 0,
+            TCEMAI = detallado.Email,             
             Detalle = detallado.Detalles.ToAS400(estado),
         };
     }

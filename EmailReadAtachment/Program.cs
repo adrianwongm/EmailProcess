@@ -13,6 +13,9 @@ using GemBox.Email.Security;
 using GemBox.Spreadsheet;
 using System.Configuration;
 using System.Threading;
+using ExcelReader;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 
 namespace EmailReadAtachment
 {
@@ -39,11 +42,22 @@ namespace EmailReadAtachment
 
             // Create IMAP client.
             // 993 SSL
-       
-            using (var imap = new ImapClient(cfgImapClient)) 
-            {
+            ServicePointManager.ServerCertificateValidationCallback =
 
-                procesarExcel("C:\\Users\\Adria\\source\\repos\\EmailReadAtachment\\EmailReadAtachment\\archivos\\2022-48-12-22-48-45_PedidosCONAUTO.xls");
+                 delegate (object s
+
+                     , X509Certificate certificate
+
+                     , X509Chain chain
+
+                     , SslPolicyErrors sslPolicyErrors)
+
+                 { return true; };
+
+            using (var imap = new ImapClient(cfgImapClient,true)) 
+            {
+              
+                //procesarExcel("C:\\Users\\Adria\\source\\repos\\EmailReadAtachment\\EmailReadAtachment\\archivos\\2022-48-12-22-48-45_PedidosCONAUTO.xls");
                 //  Connect and sign to IMAP server.
                 imap.Connect();
                 imap.Authenticate(cfgUserClient, cfgPasswordClient);  //ruanotv@swissoil.com.ec
@@ -109,7 +123,15 @@ namespace EmailReadAtachment
                                 {
                                     var receiver = message.From[0].Address;
                                     var respuestaEnvio = RespuestaEmail(receiver, ResponseEmailType.Recibido);
-                                    procesarExcel(excel.FullName);
+                                    ExcelReader.Lector.procesarExcel(excel.FullName, receiver);
+                                    if (ExcelReader.Lector.ErrorProcessList.Count() > 0)
+                                    {
+                                        //Enviar correo con listado de errores
+                                    }
+                                    else
+                                    {
+                                        //Correo aceptado pendiente de aprobacion final
+                                    }
                                 }
                             }
 

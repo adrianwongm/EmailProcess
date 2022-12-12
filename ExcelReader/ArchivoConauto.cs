@@ -18,7 +18,7 @@ namespace ExcelReader
         public string OrdenCompra { get; set; }
         public string ClientSwiss { get; set; }
         public string EntregarEn { get; set; }
-
+        public string Email { get; set; }
         public class Detallado : ArchivoConauto
         {
             public DetalleArchivoConauto[] Detalles { get; set; }

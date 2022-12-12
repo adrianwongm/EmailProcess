@@ -63,5 +63,11 @@
     <Folder Include="archivos\" />
     <Folder Include="Librerias\" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ExcelReader\ExcelReader.csproj">
+      <Project>{e1b0a18b-70b5-44de-b88c-f5bb00470742}</Project>
+      <Name>ExcelReader</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

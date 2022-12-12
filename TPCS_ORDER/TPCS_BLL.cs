@@ -54,8 +54,34 @@ namespace TPCS_ORDER
                         CommandType = CommandType.Text,
                         Connection = conexion
                     };
+                    //Verificar que no existe el registro ingresado
+                    bool existenciaPrevia = false;
+                    int secuencialPrevio = 0;
+                    OdbcDataReader readerVerificacion = (new OdbcCommand("SELECT TCSECU FROM TPCS WHERE TCCLTE = " +
+                                                                        pDatos.TCCLTE.ToString() + " AND TCORCM = '" + pDatos.TCORCM + "'")
+                    {
+                        CommandType = CommandType.Text,
+                        Connection = conexion
+                    }).ExecuteReader();
+                    while (readerVerificacion.HasRows)
+                    {
+                        while (readerVerificacion.Read())
+                        {
+                            if (!readerVerificacion.IsDBNull(0))
+                            {
+                                secuencialPrevio  = Convert.ToInt32(readerVerificacion.GetDecimal(0));
+                                existenciaPrevia =true;
+                            }
+                        }
+                        readerVerificacion.NextResult();
+                    }
+                    readerVerificacion.Close();
+                    if(existenciaPrevia) {
+                        throw new Exception("EXISTE RGISTROS PREVIOS INGRESADOS PARA EL CLIENTE " + pDatos.TCCLTE.ToString() + "CON ORDEN PREVIA " + secuencialPrevio + "");
+                    }
+
                     //Verificar secuencial
-                     pDatos.TCSECU = 0; 
+                    pDatos.TCSECU = 0; 
                      OdbcDataReader reader = (new OdbcCommand("SELECT MAX(TCSECU) +  1 FROM TPCS ")
                         {
                             CommandType = CommandType.Text,
@@ -86,7 +112,7 @@ namespace TPCS_ORDER
                     };
 
 
-                    OdbcCommand TPCSCommand = new OdbcCommand("INSERT INTO TPCS (TCSECU, TCCLTE, TCDIRE, TCORCM, TCFCRE, TCHRRE, TCESTA, TCUSES, TCFCES, TCHRES) VALUES (?,  ?,  ?,  ?,  ?,  ?,  ?,  ?, ?,  ?)")
+                    OdbcCommand TPCSCommand = new OdbcCommand("INSERT INTO TPCS (TCSECU, TCCLTE, TCDIRE, TCORCM, TCFCRE, TCHRRE, TCESTA, TCUSES, TCFCES, TCHRES, TCEMAI ) VALUES (?,  ?,  ?,  ?,  ?,  ?,  ?,  ?, ?,  ?)")
                     {
                         CommandType = CommandType.Text,
                         Connection = conexion
@@ -101,6 +127,7 @@ namespace TPCS_ORDER
                     TPCSCommand.Parameters.Add("TCUSES", OdbcType.VarChar).Value = pDatos.TCUSES;
                     TPCSCommand.Parameters.Add("TCFCES", OdbcType.Numeric).Value = pDatos.TCFCES;
                     TPCSCommand.Parameters.Add("TCHRES", OdbcType.Numeric).Value = pDatos.TCHRES;
+                    TPCSCommand.Parameters.Add("TCEMAI", OdbcType.VarChar).Value = pDatos.TCEMAI;
                     TPCSCommand.ExecuteNonQuery();
                     TPCSCommand.Dispose();
 

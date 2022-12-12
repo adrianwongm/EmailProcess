@@ -18,8 +18,9 @@ namespace ExcelReader
             ErrorProcessList = new List<string>();
         }
     
-        public static void procesarExcel(string filePath)
-        { 
+        public static void procesarExcel(string filePath, string email)
+        {
+            ErrorProcessList = new List<string>();
             try
             { 
                 string celdaValorProveedor = ConfigurationManager.AppSettings["CeldaValorProveedor"];
@@ -86,9 +87,10 @@ namespace ExcelReader
                     detallado.Sucursal= valorSucursal?.ToString();
                     detallado.DireccionEntrega = valorDireccionEntrega?.ToString();
                     detallado.OrdenCompra= valorOrdenCompra?.ToString();
-                    detallado.ClientSwiss= valorClienteSwiss?.ToString();
+                    detallado.ClientSwiss= valorClienteSwiss?.ToString();//Validacion
                     detallado.EntregarEn = valorEntregarEn?.ToString();
-                    detallado.Detalles = new DetalleArchivoConauto[] { };
+                    detallado.Email = email;
+                    detallado.Detalles = new DetalleArchivoConauto[] { };//Validacion
                   
                     IList<DetalleArchivoConauto> detalles = new List<DetalleArchivoConauto>(); 
                     var detalle = new DetalleArchivoConauto();
@@ -153,7 +155,14 @@ namespace ExcelReader
                         ErrorProcessList = ErrorList;
                         return;
                     }
+
+                    //Validar detalles 
                     string usuario = ConfigurationManager.AppSettings["User"];
+                    foreach (var detalleValidar in detallado.Detalles)
+                    {
+                        //detalleValidar.CodigoCONAUTO
+                    }
+                 
                     var registro = detallado.ToAS400(usuario, 1);
                     TPCS_BLL obj = new TPCS_BLL();
                     var resp = obj.insertaRegistroTPCS(registro,"","");

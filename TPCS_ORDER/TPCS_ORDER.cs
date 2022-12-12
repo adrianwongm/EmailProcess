@@ -55,6 +55,10 @@ namespace TPCS_ORDER
         /// HORA ESTADO
         /// </summary>
         public int TCHRES { get; set; }
+        /// <summary>
+        ///   CORREO
+        /// </summary>
+        public string TCEMAI { get; set; }
 
         public TPDS[] Detalle { get; set; }
     }
