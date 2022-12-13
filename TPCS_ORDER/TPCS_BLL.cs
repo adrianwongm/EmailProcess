@@ -34,7 +34,89 @@ namespace TPCS_ORDER
         {
         }
          
+        public bool validarCliente(string cliente, string usuario, string password)
+        {
+            bool flag = false;
+            try
+            {
+                string DSN = Utilidades.obtenerParametro(Utilidades.ParametrosString.DNS);
+                string UID = Utilidades.obtenerParametro(Utilidades.ParametrosString.UID); //usuario;
+                string PWD = Utilidades.obtenerParametro(Utilidades.ParametrosString.PWD); //password;
+                string DBQ = Utilidades.obtenerParametro(Utilidades.ParametrosString.DQB);
+                using (OdbcConnection conexion = new OdbcConnection(string.Format("DSN={0};Uid={1};Pwd={2};DBQ={3}", new object[] { DSN, UID, PWD, DBQ })))
+                {
+                    conexion.Open();
 
+                    OdbcCommand odbcCommand = new OdbcCommand()
+                    {
+                        CommandType = CommandType.Text,
+                        Connection = conexion
+                    };
+
+                    OdbcDataReader readerVerificacion = (new OdbcCommand("SELECT 1 FROM RCML01  WHERE CCUST = '" +
+                                                                        cliente + "'")
+                    {
+                        CommandType = CommandType.Text,
+                        Connection = conexion
+                    }).ExecuteReader();
+
+                    while (readerVerificacion.HasRows)
+                    {
+                        while (readerVerificacion.Read())
+                        {
+                            flag = true;
+                        }
+                    } 
+               }
+            }
+            catch (Exception)
+            {
+                 
+            }
+            return flag;
+        }
+
+        public bool validarDireccionCliente(string cliente, string direccionEntrega, string usuario, string password)
+        {
+            bool flag = false;
+            try
+            {
+                string DSN = Utilidades.obtenerParametro(Utilidades.ParametrosString.DNS);
+                string UID = Utilidades.obtenerParametro(Utilidades.ParametrosString.UID); //usuario;
+                string PWD = Utilidades.obtenerParametro(Utilidades.ParametrosString.PWD); //password;
+                string DBQ = Utilidades.obtenerParametro(Utilidades.ParametrosString.DQB);
+                using (OdbcConnection conexion = new OdbcConnection(string.Format("DSN={0};Uid={1};Pwd={2};DBQ={3}", new object[] { DSN, UID, PWD, DBQ })))
+                {
+                    conexion.Open();
+
+                    OdbcCommand odbcCommand = new OdbcCommand()
+                    {
+                        CommandType = CommandType.Text,
+                        Connection = conexion
+                    };
+
+                    OdbcDataReader readerVerificacion = (new OdbcCommand("SELECT 1 FROM ESTL01  WHERE TCUST = '" +
+                                                                        cliente + "' AND TSHIP='" + direccionEntrega + "'")
+                    {
+                        CommandType = CommandType.Text,
+                        Connection = conexion
+                    }).ExecuteReader();
+
+                    while (readerVerificacion.HasRows)
+                    {
+                        while (readerVerificacion.Read())
+                        {
+                            flag = true;
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+
+            }
+            return flag;
+        }
         public bool insertaRegistroTPCS(TPCS pDatos, string usuario, string password)
         {
             bool flag = false;
@@ -159,8 +241,146 @@ namespace TPCS_ORDER
             return flag;
         }
 
-       
-         
+        public bool validaCodigoProducto(string codigoProducto, string usuario, string password)
+        {
+            bool flag = false;
+            try
+            {
+                string DSN = Utilidades.obtenerParametro(Utilidades.ParametrosString.DNS);
+                string UID = Utilidades.obtenerParametro(Utilidades.ParametrosString.UID); //usuario;
+                string PWD = Utilidades.obtenerParametro(Utilidades.ParametrosString.PWD); //password;
+                string DBQ = Utilidades.obtenerParametro(Utilidades.ParametrosString.DQB);
+                using (OdbcConnection conexion = new OdbcConnection(string.Format("DSN={0};Uid={1};Pwd={2};DBQ={3}", new object[] { DSN, UID, PWD, DBQ })))
+                {
+                    conexion.Open();
 
+                    OdbcCommand odbcCommand = new OdbcCommand()
+                    {
+                        CommandType = CommandType.Text,
+                        Connection = conexion
+                    };
+
+                    OdbcDataReader readerVerificacion = (new OdbcCommand("SELECT 1 FROM IIML01  WHERE IPROD = '" +
+                                                                        codigoProducto + "'")
+                    {
+                        CommandType = CommandType.Text,
+                        Connection = conexion
+                    }).ExecuteReader();
+
+                    while (readerVerificacion.HasRows)
+                    {
+                        while (readerVerificacion.Read())
+                        {
+                            flag = true;
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+
+            }
+            return flag;
+        }
+
+        public bool validaCostoProducto(string codigoProducto, string usuario, string password)
+        {
+            bool flag = false;
+            try
+            {
+                string DSN = Utilidades.obtenerParametro(Utilidades.ParametrosString.DNS);
+                string UID = Utilidades.obtenerParametro(Utilidades.ParametrosString.UID); //usuario;
+                string PWD = Utilidades.obtenerParametro(Utilidades.ParametrosString.PWD); //password;
+                string DBQ = Utilidades.obtenerParametro(Utilidades.ParametrosString.DQB);
+                using (OdbcConnection conexion = new OdbcConnection(string.Format("DSN={0};Uid={1};Pwd={2};DBQ={3}", new object[] { DSN, UID, PWD, DBQ })))
+                {
+                    conexion.Open();
+
+                    OdbcCommand odbcCommand = new OdbcCommand()
+                    {
+                        CommandType = CommandType.Text,
+                        Connection = conexion
+                    };
+
+                    OdbcDataReader readerVerificacion = (new OdbcCommand("SELECT 1 FROM CMFL01  WHERE IPROD = '" +
+                                                                        codigoProducto + "'")
+                    {
+                        CommandType = CommandType.Text,
+                        Connection = conexion
+                    }).ExecuteReader();
+
+                    while (readerVerificacion.HasRows)
+                    {
+                        while (readerVerificacion.Read())
+                        {
+                            flag = true;
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+
+            }
+            return flag;
+        }
+
+        public bool validaPrecioProducto(string codigoProducto, string usuario, string password)
+        {
+            bool flag = false;
+            try
+            {
+                string DSN = Utilidades.obtenerParametro(Utilidades.ParametrosString.DNS);
+                string UID = Utilidades.obtenerParametro(Utilidades.ParametrosString.UID); //usuario;
+                string PWD = Utilidades.obtenerParametro(Utilidades.ParametrosString.PWD); //password;
+                string DBQ = Utilidades.obtenerParametro(Utilidades.ParametrosString.DQB);
+                using (OdbcConnection conexion = new OdbcConnection(string.Format("DSN={0};Uid={1};Pwd={2};DBQ={3}", new object[] { DSN, UID, PWD, DBQ })))
+                {
+                    conexion.Open();
+
+                    OdbcCommand odbcCommand = new OdbcCommand()
+                    {
+                        CommandType = CommandType.Text,
+                        Connection = conexion
+                    };
+
+                    OdbcDataReader readerVerificacion = (new OdbcCommand("SELECT 1 FROM ESPL01  WHERE IPROD = '" +
+                                                                        codigoProducto + "'")
+                    {
+                        CommandType = CommandType.Text,
+                        Connection = conexion
+                    }).ExecuteReader();
+
+                    while (readerVerificacion.HasRows)
+                    {
+                        while (readerVerificacion.Read())
+                        {
+                            flag = true;
+                        }
+                    }
+                    if(flag ==false)
+                    {
+                        OdbcDataReader readerVerificacionExtra = (new OdbcCommand("SELECT 1 FROM CLTESPREC2 WHERE IPROD = '" +
+                                                                        codigoProducto + "'")
+                        {
+                            CommandType = CommandType.Text,
+                            Connection = conexion
+                        }).ExecuteReader();
+                        while (readerVerificacionExtra.HasRows)
+                        {
+                            while (readerVerificacionExtra.Read())
+                            {
+                                flag = true;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+
+            }
+            return flag;
+        }
     }
 }

@@ -156,15 +156,25 @@ namespace ExcelReader
                         return;
                     }
 
+                    TPCS_BLL obj = new TPCS_BLL();
+                    //Validar Clientes
+                    obj.validarCliente(detallado.ClientSwiss, "", "");
+                    obj.validarDireccionCliente(detallado.ClientSwiss, detallado.EntregarEn,"","");
+                    
                     //Validar detalles 
                     string usuario = ConfigurationManager.AppSettings["User"];
+
+
                     foreach (var detalleValidar in detallado.Detalles)
                     {
+                        obj.validaCodigoProducto(detalleValidar.CodigoSWISSOIL, "", "");
+                        obj.validaCostoProducto(detalleValidar.CodigoSWISSOIL, "", "");
+                        obj.validaPrecioProducto(detalleValidar.CodigoSWISSOIL, "", "");
                         //detalleValidar.CodigoCONAUTO
                     }
                  
                     var registro = detallado.ToAS400(usuario, 1);
-                    TPCS_BLL obj = new TPCS_BLL();
+                    
                     var resp = obj.insertaRegistroTPCS(registro,"","");
                 }
             }
