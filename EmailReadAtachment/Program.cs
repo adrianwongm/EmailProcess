@@ -22,7 +22,9 @@ namespace EmailReadAtachment
     public enum ResponseEmailType
     {
         None = 0,   
-        Recibido=1
+        Recibido=1,
+        Procesado=2,
+        Error =3
     }
     internal class Program
     {
@@ -35,6 +37,12 @@ namespace EmailReadAtachment
         static string cfgPathFile = ConfigurationManager.AppSettings["PathFile"];
         static string cfgSubjectResponseForReceive = ConfigurationManager.AppSettings["SubjectResponseForReceive"];
         static string cfgBodyTextForReceive = ConfigurationManager.AppSettings["BodyTextForReceive"];
+        static string cfgSubjectResponseForProcess = ConfigurationManager.AppSettings["SubjectResponseForProcess"];
+        static string cfgBodyTextForProcess = ConfigurationManager.AppSettings["BodyTextForProcess"];
+        static string cfgSubjectResponseForError = ConfigurationManager.AppSettings["SubjectResponseForError"];
+        static string cfgBodyTextForError = ConfigurationManager.AppSettings["BodyTextForError"];
+        
+            
         public static  void Main(string[] args)
         {
             // If using Professional version, put your serial key below.
@@ -122,15 +130,16 @@ namespace EmailReadAtachment
                                 if (excel.Exists)
                                 {
                                     var receiver = message.From[0].Address;
-                                    var respuestaEnvio = RespuestaEmail(receiver, ResponseEmailType.Recibido);
-                                    ExcelReader.Lector.procesarExcel(excel.FullName, receiver);
+                                    var respuestaEnvio = RespuestaEmail(receiver, ResponseEmailType.Recibido, null, null);
+                                    var archivoConautoDetallado = ExcelReader.Lector.procesarExcel(excel.FullName, receiver);
                                     if (ExcelReader.Lector.ErrorProcessList.Count() > 0)
                                     {
-                                        //Enviar correo con listado de errores
+                                        var respuestaError = RespuestaEmail(receiver, ResponseEmailType.Recibido, null, ExcelReader.Lector.ErrorProcessList);
                                     }
                                     else
                                     {
                                         //Correo aceptado pendiente de aprobacion final
+                                        var respuestaProcesado = RespuestaEmail(receiver, ResponseEmailType.Procesado, archivoConautoDetallado, null);
                                     }
                                 }
                             }
@@ -146,7 +155,8 @@ namespace EmailReadAtachment
                 Console.WriteLine($"Message '{info.Uid}' deleted.");
         }
 
-        static  bool RespuestaEmail(string receiver, ResponseEmailType responseEmailType)
+        static  bool RespuestaEmail(string receiver, ResponseEmailType responseEmailType, ArchivoConauto.Detallado detallado, 
+                                    List<string> listadoErrores)
         {
             try
             {
@@ -158,7 +168,18 @@ namespace EmailReadAtachment
                 {
                     messageReponse.Subject = cfgSubjectResponseForReceive;
                     messageReponse.BodyText = cfgBodyTextForReceive;
-                } 
+                }
+                if (responseEmailType == ResponseEmailType.Procesado)
+                {
+                    messageReponse.Subject = cfgSubjectResponseForProcess;
+                    messageReponse.BodyText = cfgBodyTextForProcess;
+                }
+                if (responseEmailType == ResponseEmailType.Error)
+                {
+                    messageReponse.Subject = cfgSubjectResponseForError;
+                    messageReponse.BodyText = cfgBodyTextForError;
+                }
+
                 /*var mailSender = new System.Net.Mail.SmtpClient
                 {
                     Host = cfgImapClient,

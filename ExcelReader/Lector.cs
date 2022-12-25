@@ -18,9 +18,12 @@ namespace ExcelReader
             ErrorProcessList = new List<string>();
         }
     
-        public static void procesarExcel(string filePath, string email)
+        public static ArchivoConauto.Detallado procesarExcel(string filePath, string email)
         {
-            ErrorProcessList = new List<string>();
+            bool resp=false;
+            ArchivoConauto.Detallado detallado = new ArchivoConauto.Detallado();
+            ErrorProcessList = new List<string>(); 
+            List<string> ErrorList = new List<string>();
             try
             { 
                 string celdaValorProveedor = ConfigurationManager.AppSettings["CeldaValorProveedor"];
@@ -54,13 +57,12 @@ namespace ExcelReader
                     var valorClienteSwiss = worksheet.Cells[celdaValorClienteSwiss].Value;
                     var valorEntregarEn = worksheet.Cells[celdaValorEntregarEn].Value;
 
-                  
-                    int limiteActual = 1;
+                    //int limiteActual = 1;
                     var rangoContenido = worksheet.Cells.GetSubrange(celdaRangoInicialValores, $"{ columnaRangoFinalValores}{ limiteMaximoValores}");
                     var columnaRangoIncialValores = rangoContenido.First().Column.Name;
-                    ArchivoConauto.Detallado detallado = new ArchivoConauto.Detallado();
+                   
                      
-                    List<string> ErrorList= new List<string>();
+                    ErrorList= new List<string>();
                     ArchivoConautoOperations.Validator.verifcaTexto(valorProveedor, nameof(valorProveedor) +$" Cell:({celdaValorProveedor})");
                     if (!string.IsNullOrEmpty(ArchivoConautoOperations.Validator._mensajeError))  ErrorList.Add(ArchivoConautoOperations.Validator._mensajeError) ;
 
@@ -153,35 +155,61 @@ namespace ExcelReader
                     if (ErrorList.Count > 0)
                     {
                         ErrorProcessList = ErrorList;
-                        return;
+                        return detallado;
                     }
 
                     TPCS_BLL obj = new TPCS_BLL();
                     //Validar Clientes
-                    obj.validarCliente(detallado.ClientSwiss, "", "");
-                    obj.validarDireccionCliente(detallado.ClientSwiss, detallado.EntregarEn,"","");
+                    if(!obj.validarCliente(detallado.ClientSwiss, "", ""))
+                    {
+                        ErrorList.Add($"El codigo de cliente {detallado.ClientSwiss} , no es válido.");
+                    }
+                    if(!obj.validarDireccionCliente(detallado.ClientSwiss, detallado.EntregarEn, "", ""))
+                    {
+                        ErrorList.Add($"El codigo de entrega ({detallado.EntregarEn}) del" +
+                            $" codigo de cliente {detallado.ClientSwiss} no es válido.");
+                    }
                     
                     //Validar detalles 
                     string usuario = ConfigurationManager.AppSettings["User"];
-
-
+                    int i = 1;
                     foreach (var detalleValidar in detallado.Detalles)
                     {
-                        obj.validaCodigoProducto(detalleValidar.CodigoSWISSOIL, "", "");
-                        obj.validaCostoProducto(detalleValidar.CodigoSWISSOIL, "", "");
-                        obj.validaPrecioProducto(detalleValidar.CodigoSWISSOIL, "", "");
+                        if (!obj.validaCodigoProducto(detalleValidar.CodigoSWISSOIL, "", "")) {
+                            ErrorList.Add($"El codigo de producto ({detalleValidar.CodigoSWISSOIL})" +
+                               $" no es válido. Linea #{i}");
+                        }
+                        if (!obj.validaCostoProducto(detalleValidar.CodigoSWISSOIL, "", "")) {
+                            ErrorList.Add($"El codigo de producto ({detalleValidar.CodigoSWISSOIL})" +
+                                $" no tiene costo. Linea #{i}");
+                        }
+                        if (!obj.validaPrecioProducto(detalleValidar.CodigoSWISSOIL, "", "")) {
+                            ErrorList.Add($"El codigo de producto ({detalleValidar.CodigoSWISSOIL})" +
+                                    $" no tiene precio. Linea #{i}");
+                        }
+                         i++;
                         //detalleValidar.CodigoCONAUTO
                     }
-                 
-                    var registro = detallado.ToAS400(usuario, 1);
-                    
-                    var resp = obj.insertaRegistroTPCS(registro,"","");
-                }
-            }
-            catch (Exception)
-            {
 
-                throw;
+                    if (ErrorList.Count > 0)
+                    {
+                        ErrorProcessList = ErrorList;
+                        return detallado;
+                    }
+
+                    var registro = detallado.ToAS400(usuario, 1);
+                    resp = obj.insertaRegistroTPCS(registro,"",""); 
+                }
+                if (resp == true)
+                {
+                    return detallado;
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                ErrorList.Add($"Error en procesamiento ({ex.Message})");
+                return null;
             }
         }
     }

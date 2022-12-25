@@ -53,14 +53,14 @@ namespace TPCS_ORDER
                         Connection = conexion
                     };
 
-                    OdbcDataReader readerVerificacion = (new OdbcCommand("SELECT 1 FROM RCML01  WHERE CCUST = '" +
+                    OdbcDataReader readerVerificacion = (new OdbcCommand("SELECT  CCUST  FROM RCML01  WHERE CCUST = '" +
                                                                         cliente + "'")
                     {
                         CommandType = CommandType.Text,
                         Connection = conexion
                     }).ExecuteReader();
 
-                    while (readerVerificacion.HasRows)
+                    if (readerVerificacion.HasRows)
                     {
                         while (readerVerificacion.Read())
                         {
@@ -102,7 +102,7 @@ namespace TPCS_ORDER
                         Connection = conexion
                     }).ExecuteReader();
 
-                    while (readerVerificacion.HasRows)
+                    if (readerVerificacion.HasRows)
                     {
                         while (readerVerificacion.Read())
                         {
@@ -145,7 +145,7 @@ namespace TPCS_ORDER
                         CommandType = CommandType.Text,
                         Connection = conexion
                     }).ExecuteReader();
-                    while (readerVerificacion.HasRows)
+                    if (readerVerificacion.HasRows)
                     {
                         while (readerVerificacion.Read())
                         {
@@ -169,7 +169,7 @@ namespace TPCS_ORDER
                             CommandType = CommandType.Text,
                             Connection = conexion
                         }).ExecuteReader();
-                        while (reader.HasRows)
+                        if (reader.HasRows)
                         {
                             while (reader.Read())
                             {
@@ -194,7 +194,9 @@ namespace TPCS_ORDER
                     };
 
 
-                    OdbcCommand TPCSCommand = new OdbcCommand("INSERT INTO TPCS (TCSECU, TCCLTE, TCDIRE, TCORCM, TCFCRE, TCHRRE, TCESTA, TCUSES, TCFCES, TCHRES, TCEMAI ) VALUES (?,  ?,  ?,  ?,  ?,  ?,  ?,  ?, ?,  ?)")
+                    OdbcCommand TPCSCommand = new OdbcCommand("INSERT INTO TPCS " +
+                        "(TCSECU, TCCLTE, TCDIRE, TCORCM, TCFCRE, TCHRRE, TCESTA, TCUSES, TCFCES, TCHRES, TCEMAI ) " +
+                        "VALUES (?,  ?,  ?,  ?,  ?,  ?,  ?,  ?, ?,  ?, ?)")
                     {
                         CommandType = CommandType.Text,
                         Connection = conexion
@@ -260,14 +262,14 @@ namespace TPCS_ORDER
                         Connection = conexion
                     };
 
-                    OdbcDataReader readerVerificacion = (new OdbcCommand("SELECT 1 FROM IIML01  WHERE IPROD = '" +
+                    OdbcDataReader readerVerificacion = (new OdbcCommand("SELECT IPROD FROM IIML01  WHERE IPROD = '" +
                                                                         codigoProducto + "'")
                     {
                         CommandType = CommandType.Text,
                         Connection = conexion
                     }).ExecuteReader();
 
-                    while (readerVerificacion.HasRows)
+                    if (readerVerificacion.HasRows)
                     {
                         while (readerVerificacion.Read())
                         {
@@ -302,14 +304,14 @@ namespace TPCS_ORDER
                         Connection = conexion
                     };
 
-                    OdbcDataReader readerVerificacion = (new OdbcCommand("SELECT 1 FROM CMFL01  WHERE IPROD = '" +
+                    OdbcDataReader readerVerificacion = (new OdbcCommand("SELECT CFPROD FROM CMFL01  WHERE  CFPROD  = '" +
                                                                         codigoProducto + "'")
                     {
                         CommandType = CommandType.Text,
                         Connection = conexion
                     }).ExecuteReader();
 
-                    while (readerVerificacion.HasRows)
+                    if (readerVerificacion.HasRows)
                     {
                         while (readerVerificacion.Read())
                         {
@@ -344,14 +346,14 @@ namespace TPCS_ORDER
                         Connection = conexion
                     };
 
-                    OdbcDataReader readerVerificacion = (new OdbcCommand("SELECT 1 FROM ESPL01  WHERE IPROD = '" +
+                    OdbcDataReader readerVerificacion = (new OdbcCommand("SELECT PRKEY FROM ESPL01  WHERE PRKEY = '" +
                                                                         codigoProducto + "'")
                     {
                         CommandType = CommandType.Text,
                         Connection = conexion
                     }).ExecuteReader();
 
-                    while (readerVerificacion.HasRows)
+                    if (readerVerificacion.HasRows)
                     {
                         while (readerVerificacion.Read())
                         {
@@ -359,14 +361,14 @@ namespace TPCS_ORDER
                         }
                     }
                     if(flag ==false)
-                    {
-                        OdbcDataReader readerVerificacionExtra = (new OdbcCommand("SELECT 1 FROM CLTESPREC2 WHERE IPROD = '" +
+                    { 
+                        OdbcDataReader readerVerificacionExtra = (new OdbcCommand("SELECT  CPITEM  FROM CLTEPREC2 WHERE CPITEM = '" +
                                                                         codigoProducto + "'")
                         {
                             CommandType = CommandType.Text,
                             Connection = conexion
                         }).ExecuteReader();
-                        while (readerVerificacionExtra.HasRows)
+                        if (readerVerificacionExtra.HasRows)
                         {
                             while (readerVerificacionExtra.Read())
                             {

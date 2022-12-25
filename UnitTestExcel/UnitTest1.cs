@@ -10,7 +10,7 @@ namespace UnitTestExcel
         [TestMethod]
         public void ReadExcel()
         {
-            var pathExcel = $"C:\\Users\\Adria\\source\\repos\\EmailReadAtachment\\EmailReadAtachment\\archivos\\Formato.xls";
+            var pathExcel = $"C:\\Users\\Adria\\source\\repos\\EmailReadAtachment\\EmailReadAtachment\\archivos\\1Formato.xls";
             Lector.procesarExcel(pathExcel,"Excel");
              
         }

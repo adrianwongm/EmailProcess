@@ -88,7 +88,7 @@ namespace TCPP2
                         CommandType = CommandType.Text,
                         Connection = conexion
                     }).ExecuteReader();
-                    while (reader.HasRows)
+                    if (reader.HasRows)
                     {
                         while (reader.Read())
                         {
@@ -128,7 +128,7 @@ namespace TCPP2
                         CommandType = CommandType.Text,
                         Connection = conexion
                     }).ExecuteReader();
-                    while (reader.HasRows)
+                    if (reader.HasRows)
                     {
                         while (reader.Read())
                         {
@@ -165,7 +165,7 @@ namespace TCPP2
                         CommandType = CommandType.Text,
                         Connection = conexion
                     }).ExecuteReader();
-                    while (reader.HasRows)
+                    if (reader.HasRows)
                     {
                         while (reader.Read())
                         {
@@ -208,7 +208,7 @@ namespace TCPP2
                     {
                         TPITEM = pItem.Trim()
                     };
-                    while (reader.HasRows)
+                    if (reader.HasRows)
                     {
                         while (reader.Read())
                         {
@@ -457,7 +457,7 @@ namespace TCPP2
                         CommandType = CommandType.Text,
                         Connection = conexion
                     }).ExecuteReader();
-                    while (reader.HasRows)
+                    if (reader.HasRows)
                     {
                         while (reader.Read())
                         {
@@ -509,7 +509,7 @@ namespace TCPP2
                         Connection = conexion
                     }).ExecuteReader();
                     TCPP2 obj = new TCPP2();
-                    while (reader.HasRows)
+                    if (reader.HasRows)
                     {
                         while (reader.Read())
                         {
@@ -564,7 +564,7 @@ namespace TCPP2
                         Connection = conexion
                     }).ExecuteReader();
                     obj = new ZCC_VENDOR();
-                    while (reader.HasRows)
+                    if (reader.HasRows)
                     {
                         while (reader.Read())
                         {
@@ -687,7 +687,7 @@ namespace TCPP2
                             if (verficaCantidades)
                             {
                                 TCPP obj = new TCPP();
-                                while (reader.HasRows)
+                                if (reader.HasRows)
                                 {
                                     while (reader.Read())
                                     {
@@ -906,7 +906,7 @@ namespace TCPP2
                     conexion.Open();
                     OdbcDataReader reader = command.ExecuteReader();
                     Producto oProducto = new Producto();
-                    while (reader.HasRows)
+                    if (reader.HasRows)
                     {
                         while (reader.Read())
                         {
@@ -997,7 +997,7 @@ namespace TCPP2
                         CommandType = CommandType.Text,
                         Connection = conexion
                     }).ExecuteReader();
-                    while (reader.HasRows)
+                    if (reader.HasRows)
                     {
                         while (reader.Read())
                         {

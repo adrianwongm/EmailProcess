@@ -144,7 +144,7 @@ namespace TA03
                     command.Connection = conexion;
                     conexion.Open();
                     OdbcDataReader reader = command.ExecuteReader();
-                    while (reader.HasRows)
+                    if (reader.HasRows)
                     {
                         while (reader.Read())
                         {
@@ -242,7 +242,7 @@ namespace TA03
                     command.Connection = conexion;
                     conexion.Open();
                     OdbcDataReader reader = command.ExecuteReader();
-                    while (reader.HasRows)
+                    if (reader.HasRows)
                     {
                         while (reader.Read())
                         {
