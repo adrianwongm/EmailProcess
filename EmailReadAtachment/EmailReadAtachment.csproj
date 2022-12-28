@@ -54,7 +54,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <Content Include="Local\baseUid.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Include="App.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <Content Include="DataLayer.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -68,6 +73,17 @@
       <Project>{e1b0a18b-70b5-44de-b88c-f5bb00470742}</Project>
       <Name>ExcelReader</Name>
     </ProjectReference>
+    <ProjectReference Include="..\LogErrores\LogErrores.csproj">
+      <Project>{055715bb-bd39-4c5d-aae3-7528a016a054}</Project>
+      <Name>LogErrores</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NotificacionEmailMessage\NotificacionEmailMessage.csproj">
+      <Project>{93627E59-3DF7-4FD2-A668-E6872A783108}</Project>
+      <Name>NotificacionEmailMessage</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

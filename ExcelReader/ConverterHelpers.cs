@@ -44,7 +44,7 @@ internal static class ConverterHelpers
         };
     }
 
-    public static TPDS[] ToAS400(this DetalleArchivoConauto[] detalle,   int estado)
+    public static TPDS[] ToAS400(this DetalleArchivoConauto[] detalle, int estado)
     {
         List<TPDS> lista= new List<TPDS>();
         foreach (var item in detalle)
@@ -52,10 +52,12 @@ internal static class ConverterHelpers
             lista.Add(new TPDS() { 
                  TDSECU = item.Orden,
                  TDSEC2 = 0,
-                 TDCANT =   Convert.ToDecimal(item.Cantidad??0d),
+                 TDCANT = Convert.ToDecimal(item.Cantidad??0d),
                  TDCDCL = item.CodigoCONAUTO,
                  TDCDSW = item.CodigoSWISSOIL,
-                 TDESTA = estado
+                 TDESTA = estado,
+                 TDCOST = Convert.ToDecimal(item.Costo),
+                 TDPREC = Convert.ToDecimal(item.Precio),
             });
         }
         return lista.ToArray();

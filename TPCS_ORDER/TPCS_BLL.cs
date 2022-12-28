@@ -139,7 +139,8 @@ namespace TPCS_ORDER
                     //Verificar que no existe el registro ingresado
                     bool existenciaPrevia = false;
                     int secuencialPrevio = 0;
-                    OdbcDataReader readerVerificacion = (new OdbcCommand("SELECT TCSECU FROM TPCS WHERE TCCLTE = " +
+                    string ordenCompra = "";
+                    OdbcDataReader readerVerificacion = (new OdbcCommand("SELECT TCSECU, TCORCM FROM TPCS WHERE TCCLTE = " +
                                                                         pDatos.TCCLTE.ToString() + " AND TCORCM = '" + pDatos.TCORCM + "'")
                     {
                         CommandType = CommandType.Text,
@@ -152,6 +153,7 @@ namespace TPCS_ORDER
                             if (!readerVerificacion.IsDBNull(0))
                             {
                                 secuencialPrevio  = Convert.ToInt32(readerVerificacion.GetDecimal(0));
+                                ordenCompra = readerVerificacion.GetString(1);
                                 existenciaPrevia =true;
                             }
                         }
@@ -159,7 +161,7 @@ namespace TPCS_ORDER
                     }
                     readerVerificacion.Close();
                     if(existenciaPrevia) {
-                        throw new Exception("EXISTE RGISTROS PREVIOS INGRESADOS PARA EL CLIENTE " + pDatos.TCCLTE.ToString() + "CON ORDEN PREVIA " + secuencialPrevio + "");
+                        throw new Exception("EXISTEN REGISTROS PREVIOS INGRESADOS PARA EL CLIENTE " + pDatos.TCCLTE.ToString() + " CON ORDEN PREVIA: " + ordenCompra  + " (" + secuencialPrevio + ")");
                     }
 
                     //Verificar secuencial
@@ -217,7 +219,8 @@ namespace TPCS_ORDER
 
                     foreach (var detalle in pDatos.Detalle)
                     {
-                        OdbcCommand TPDSCommand = new OdbcCommand("INSERT INTO TPDS (TDSECU, TDSEC2, TDCDCL, TDCDSW, TDCANT, TDESTA) VALUES (?,  ?,  ?,  ?,  ?,  ?)")
+                        OdbcCommand TPDSCommand = new OdbcCommand("INSERT INTO TPDS " +
+                            "(TDSECU, TDSEC2, TDCDCL, TDCDSW, TDCANT, TDESTA, TDPREC, TDCOST ) VALUES (?,  ?,  ?,  ?,  ?,  ?, ?, ?)")
                         {
                             CommandType = CommandType.Text,
                             Connection = conexion
@@ -229,6 +232,8 @@ namespace TPCS_ORDER
                         TPDSCommand.Parameters.Add("TDCDSW", OdbcType.VarChar).Value = detalle.TDCDSW;
                         TPDSCommand.Parameters.Add("TDCANT", OdbcType.Numeric).Value = detalle.TDCANT;
                         TPDSCommand.Parameters.Add("TDESTA", OdbcType.Numeric).Value = detalle.TDESTA;
+                        TPDSCommand.Parameters.Add("TDPREC", OdbcType.Numeric).Value = detalle.TDPREC;
+                        TPDSCommand.Parameters.Add("TDCOST", OdbcType.Numeric).Value = detalle.TDCOST;
                         TPDSCommand.ExecuteNonQuery();
                         TPDSCommand.Dispose();
                     }
@@ -238,7 +243,15 @@ namespace TPCS_ORDER
             catch (Exception exception)
             {
                 Exception ex = exception;
-                throw new Exception(string.Concat(new string[] { "Orden: ", pDatos.TCSECU.ToString(), " -> ", ex.Message }));
+                if (pDatos?.TCSECU > 0)
+                {
+                    throw new Exception(string.Concat(new string[] { "Orden: ", pDatos?.TCSECU.ToString(), " -> ", ex.Message }));
+                }
+                else
+                {
+                    throw new Exception(ex.Message);
+                }
+                
             }
             return flag;
         }
@@ -285,8 +298,9 @@ namespace TPCS_ORDER
             return flag;
         }
 
-        public bool validaCostoProducto(string codigoProducto, string usuario, string password)
+        public bool validaCostoProducto(string codigoProducto, string usuario, string password, out double costo)
         {
+            costo = 0;
             bool flag = false;
             try
             {
@@ -304,7 +318,7 @@ namespace TPCS_ORDER
                         Connection = conexion
                     };
 
-                    OdbcDataReader readerVerificacion = (new OdbcCommand("SELECT CFPROD FROM CMFL01  WHERE  CFPROD  = '" +
+                    OdbcDataReader readerVerificacion = (new OdbcCommand("SELECT CFPROD,  CFTLVL + CFPLVL    FROM CMFL01  WHERE  CFPROD  = '" +
                                                                         codigoProducto + "'")
                     {
                         CommandType = CommandType.Text,
@@ -315,6 +329,7 @@ namespace TPCS_ORDER
                     {
                         while (readerVerificacion.Read())
                         {
+                            costo = readerVerificacion.GetDouble(1);
                             flag = true;
                         }
                     }
@@ -327,8 +342,9 @@ namespace TPCS_ORDER
             return flag;
         }
 
-        public bool validaPrecioProducto(string codigoProducto, string usuario, string password)
+        public bool validaPrecioProducto(string codigoProducto, string usuario, string password, out double precio)
         {
+            precio = 0;
             bool flag = false;
             try
             {
@@ -346,7 +362,7 @@ namespace TPCS_ORDER
                         Connection = conexion
                     };
 
-                    OdbcDataReader readerVerificacion = (new OdbcCommand("SELECT PRKEY FROM ESPL01  WHERE PRKEY = '" +
+                    /*OdbcDataReader readerVerificacion = (new OdbcCommand("SELECT PRKEY FROM ESPL01  WHERE PRKEY = '" +
                                                                         codigoProducto + "'")
                     {
                         CommandType = CommandType.Text,
@@ -360,9 +376,11 @@ namespace TPCS_ORDER
                             flag = true;
                         }
                     }
-                    if(flag ==false)
-                    { 
-                        OdbcDataReader readerVerificacionExtra = (new OdbcCommand("SELECT  CPITEM  FROM CLTEPREC2 WHERE CPITEM = '" +
+                    
+                    if (flag == false)
+                    { return flag; }  */
+
+                    OdbcDataReader readerVerificacionExtra = (new OdbcCommand("SELECT  CPITEM, CPPREC  FROM CLTEPREC2 WHERE CPITEM = '" +
                                                                         codigoProducto + "'")
                         {
                             CommandType = CommandType.Text,
@@ -372,13 +390,14 @@ namespace TPCS_ORDER
                         {
                             while (readerVerificacionExtra.Read())
                             {
+                                precio = readerVerificacionExtra.GetDouble(1);
                                 flag = true;
                             }
                         }
-                    }
+                    //}
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
 
             }

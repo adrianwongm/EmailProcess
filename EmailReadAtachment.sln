@@ -15,6 +15,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelReader", "ExcelReader\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestExcel", "UnitTestExcel\UnitTestExcel.csproj", "{045CF46E-632A-414C-BA51-3A4D97E97950}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotificacionEmailMessage", "NotificacionEmailMessage\NotificacionEmailMessage.csproj", "{93627E59-3DF7-4FD2-A668-E6872A783108}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogErrores", "LogErrores\LogErrores.csproj", "{055715BB-BD39-4C5D-AAE3-7528A016A054}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +49,14 @@ Global
 		{045CF46E-632A-414C-BA51-3A4D97E97950}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{045CF46E-632A-414C-BA51-3A4D97E97950}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{045CF46E-632A-414C-BA51-3A4D97E97950}.Release|Any CPU.Build.0 = Release|Any CPU
+		{93627E59-3DF7-4FD2-A668-E6872A783108}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93627E59-3DF7-4FD2-A668-E6872A783108}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93627E59-3DF7-4FD2-A668-E6872A783108}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93627E59-3DF7-4FD2-A668-E6872A783108}.Release|Any CPU.Build.0 = Release|Any CPU
+		{055715BB-BD39-4C5D-AAE3-7528A016A054}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{055715BB-BD39-4C5D-AAE3-7528A016A054}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{055715BB-BD39-4C5D-AAE3-7528A016A054}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{055715BB-BD39-4C5D-AAE3-7528A016A054}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -33,11 +33,13 @@ namespace ExcelReader
     public class DetalleArchivoConauto
     {
         public int Orden { get; set; }
-        public string  CodigoCONAUTO { get; set; }
-        public string  CodigoSWISSOIL { get; set; }
+        public string CodigoCONAUTO { get; set; }
+        public string CodigoSWISSOIL { get; set; }
         public string DescripcionProducto { get; set; }
-        public string   Empaque { get; set; }
+        public string Empaque { get; set; }
         public double? Cantidad { get; set; }
+        public double Precio { get; set; }
+        public double Costo { get; set; }
     }
 
     public class ArchivoConautoOperations

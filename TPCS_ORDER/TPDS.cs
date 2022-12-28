@@ -13,6 +13,10 @@ namespace TPCS_ORDER
         public string TDCDCL { get; set; }
         public string TDCDSW { get; set; }
         public decimal TDCANT { get; set; }
-        public int TDESTA { get; set; }
-    }
+        public int TDESTA { get; set; } 
+        public decimal TDPREC { get; set; }
+        public decimal TDCOST{ get; set; }
+
+
+}
 }

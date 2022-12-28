@@ -16,16 +16,12 @@ using System.Threading;
 using ExcelReader;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using System.IO;
+using NotificacionEmailMessage;
+using LogErrores;
 
 namespace EmailReadAtachment
-{
-    public enum ResponseEmailType
-    {
-        None = 0,   
-        Recibido=1,
-        Procesado=2,
-        Error =3
-    }
+{ 
     internal class Program
     {
         static string cfgImapClient = ConfigurationManager.AppSettings["ImapClient"];
@@ -35,19 +31,11 @@ namespace EmailReadAtachment
         static string cfgSubject = ConfigurationManager.AppSettings["Subject"];
         static string cfgExtensionFile = ConfigurationManager.AppSettings["ExtensionFile"];
         static string cfgPathFile = ConfigurationManager.AppSettings["PathFile"];
-        static string cfgSubjectResponseForReceive = ConfigurationManager.AppSettings["SubjectResponseForReceive"];
-        static string cfgBodyTextForReceive = ConfigurationManager.AppSettings["BodyTextForReceive"];
-        static string cfgSubjectResponseForProcess = ConfigurationManager.AppSettings["SubjectResponseForProcess"];
-        static string cfgBodyTextForProcess = ConfigurationManager.AppSettings["BodyTextForProcess"];
-        static string cfgSubjectResponseForError = ConfigurationManager.AppSettings["SubjectResponseForError"];
-        static string cfgBodyTextForError = ConfigurationManager.AppSettings["BodyTextForError"];
-        
-            
+        static string cfgPathTxtBase = ConfigurationManager.AppSettings["PathTxtBase"];
+
+
         public static  void Main(string[] args)
         {
-            // If using Professional version, put your serial key below.
-            ComponentInfo.SetLicense("FREE-LIMITED-KEY");
-
             // Create IMAP client.
             // 993 SSL
             ServicePointManager.ServerCertificateValidationCallback =
@@ -62,48 +50,59 @@ namespace EmailReadAtachment
 
                  { return true; };
 
-            using (var imap = new ImapClient(cfgImapClient,true)) 
-            {
-              
-                //procesarExcel("C:\\Users\\Adria\\source\\repos\\EmailReadAtachment\\EmailReadAtachment\\archivos\\2022-48-12-22-48-45_PedidosCONAUTO.xls");
-                //  Connect and sign to IMAP server.
-                imap.Connect();
-                imap.Authenticate(cfgUserClient, cfgPasswordClient);  //ruanotv@swissoil.com.ec
-
-                // Select INBOX folder.
-                imap.SelectInbox();
-               // RespuestaEmail("adrian.wong.m@gmail.com", ResponseEmailType.Recibido);
-                using (var listener = new ImapListener(imap))
+            try
+            { 
+                // If using Professional version, put your serial key below.
+                ComponentInfo.SetLicense("FREE-LIMITED-KEY");
+                using (var imap = new ImapClient(cfgImapClient, true))
                 {
-                    listener.MessagesChanged += OnMessagesChanged;
-                    imap.IdleEnable();
+                    //  Connect and sign to IMAP server.
+                    imap.Connect();
+                    imap.Authenticate(cfgUserClient, cfgPasswordClient);  //ruanotv@swissoil.com.ec
 
-                    Console.WriteLine("Press any key to exit...");
-                    Console.ReadKey();
+                    // Select INBOX folder.
+                    imap.SelectInbox();
+                    // RespuestaEmail("adrian.wong.m@gmail.com", ResponseEmailType.Recibido);
+                    using (var listener = new ImapListener(imap))
+                    {
+                        listener.MessagesChanged += OnMessagesChanged;
+                        imap.IdleEnable();
 
-                    imap.IdleDisable();
-                    listener.MessagesChanged -= OnMessagesChanged;
+                        Console.WriteLine("Press any key to exit...");
+                        Console.ReadKey();
+
+                        imap.IdleDisable();
+                        listener.MessagesChanged -= OnMessagesChanged;
+                    }
+
+                    // Read the number of currently available emails in selected mailbox folder.
+                    int count = imap.SelectedFolder.Count;
+
+                    Console.WriteLine(" NO. |     DATE     |          SUBJECT          ");
+                    Console.WriteLine("------------------------------------------------");
+
+                    IList<ImapMessageInfo> infos = imap.ListMessages();
+
+                    // Display messages information.
+                    foreach (ImapMessageInfo info in infos)
+                        Console.WriteLine($"{info.Number} - [{info.Flags}] - [{info.Uid}] - {info.Size} Byte(s)");
+                    // List INBOX folder flags.
+                    IList<ImapFolderInfo> folders = imap.ListFolders();
+                    foreach (string flag in imap.SelectedFolder.Flags)
+                        Console.WriteLine(flag);
+                    IList<int> messages = imap.SearchMessageNumbers("SUBJECT \"" + cfgSubject + "\"");
+                    Console.WriteLine($"Number of messages with 'Example' in subject: {messages.Count}");
+
                 }
-
-                // Read the number of currently available emails in selected mailbox folder.
-                int count = imap.SelectedFolder.Count;
-
-                Console.WriteLine(" NO. |     DATE     |          SUBJECT          ");
-                Console.WriteLine("------------------------------------------------");
-
-                IList<ImapMessageInfo> infos = imap.ListMessages();
-
-                // Display messages information.
-                foreach (ImapMessageInfo info in infos)
-                    Console.WriteLine($"{info.Number} - [{info.Flags}] - [{info.Uid}] - {info.Size} Byte(s)");
-                // List INBOX folder flags.
-                IList<ImapFolderInfo> folders = imap.ListFolders();
-                foreach (string flag in imap.SelectedFolder.Flags)
-                    Console.WriteLine(flag);
-                IList<int> messages = imap.SearchMessageNumbers("SUBJECT \"" + cfgSubject+ "\"");
-                Console.WriteLine($"Number of messages with 'Example' in subject: {messages.Count}");
-
             }
+            catch (Exception ex)
+            {
+                funcionControlErrores(ex.Message);
+            }
+
+        
+
+         
         }
 
         static void OnMessagesChanged(object sender, ImapListenerEventArgs e)
@@ -123,23 +122,34 @@ namespace EmailReadAtachment
                             System.IO.FileInfo file = new System.IO.FileInfo(item.FileName);
                             if (file.Extension == ".xls" || file.Extension == ".xlsx" || file.Extension == ".xlsm") //Tipos de archivos de excel
                             {
-                                var nombreFinalArchivo = cfgPathFile + System.DateTime.Now.ToString("yyyy-mm-dd-HH-mm-ss") + "_" + item.FileName;
+                                var nombreFinalArchivo = cfgPathFile + System.DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss") + "_" + item.FileName;
                                 item.Save(nombreFinalArchivo);
-                                //Validar arhivo
+                                //Validar arhivo 
                                 System.IO.FileInfo excel = new System.IO.FileInfo(nombreFinalArchivo);
                                 if (excel.Exists)
                                 {
+                                    //Grabar txt Base temporal
+                                    saveLocalTxt(info.Uid);
+                                    //Notificar archivo recibido
                                     var receiver = message.From[0].Address;
-                                    var respuestaEnvio = RespuestaEmail(receiver, ResponseEmailType.Recibido, null, null);
+                                    var respuestaEnvio = NotificationEmail.RespuestaEmail(receiver, ResponseEmailType.Recibido, null, null);
+                                    //Validar Excel y procesar Excel
                                     var archivoConautoDetallado = ExcelReader.Lector.procesarExcel(excel.FullName, receiver);
+                                    //Notificacion de envio o error por email
                                     if (ExcelReader.Lector.ErrorProcessList.Count() > 0)
                                     {
-                                        var respuestaError = RespuestaEmail(receiver, ResponseEmailType.Recibido, null, ExcelReader.Lector.ErrorProcessList);
+                                        var respuestaError = NotificationEmail.RespuestaEmail(receiver, ResponseEmailType.Error, null, ExcelReader.Lector.ErrorProcessList);
+                                        foreach (var errorProcess in ExcelReader.Lector.ErrorProcessList)
+                                        {
+                                            funcionControlErrores($"Orden {archivoConautoDetallado?.OrdenCompra} : " +  errorProcess);
+                                        }
+                                       
                                     }
                                     else
                                     {
                                         //Correo aceptado pendiente de aprobacion final
-                                        var respuestaProcesado = RespuestaEmail(receiver, ResponseEmailType.Procesado, archivoConautoDetallado, null);
+                                        var respuestaProcesado = NotificationEmail.RespuestaEmail(receiver, ResponseEmailType.Procesado, 
+                                                    archivoConautoDetallado?.OrdenCompra, null);
                                     }
                                 }
                             }
@@ -148,142 +158,42 @@ namespace EmailReadAtachment
                     }
 
                 }
-            }
-               
-
+            } 
             foreach (var info in e.OldMessages)
                 Console.WriteLine($"Message '{info.Uid}' deleted.");
-        }
-
-        static  bool RespuestaEmail(string receiver, ResponseEmailType responseEmailType, ArchivoConauto.Detallado detallado, 
-                                    List<string> listadoErrores)
+        } 
+        
+        static void saveLocalTxt(string uid)
         {
-            try
+            using (FileStream fs = new FileStream(cfgPathTxtBase, FileMode.Append, FileAccess.Write))
             {
-                //Responder correo
-                GemBox.Email.MailMessage messageReponse = new GemBox.Email.MailMessage(
-                            new GemBox.Email.MailAddress(cfgEmailClient, "Sender"),
-                             new GemBox.Email.MailAddress(receiver, "First receiver"));
-                if (responseEmailType == ResponseEmailType.Recibido)
+                using (StreamWriter sw = new StreamWriter(fs))
                 {
-                    messageReponse.Subject = cfgSubjectResponseForReceive;
-                    messageReponse.BodyText = cfgBodyTextForReceive;
+                    sw.WriteLine(uid);
                 }
-                if (responseEmailType == ResponseEmailType.Procesado)
-                {
-                    messageReponse.Subject = cfgSubjectResponseForProcess;
-                    messageReponse.BodyText = cfgBodyTextForProcess;
-                }
-                if (responseEmailType == ResponseEmailType.Error)
-                {
-                    messageReponse.Subject = cfgSubjectResponseForError;
-                    messageReponse.BodyText = cfgBodyTextForError;
-                }
-
-                /*var mailSender = new System.Net.Mail.SmtpClient
-                {
-                    Host = cfgImapClient,
-                    // Port = 587,
-                    EnableSsl = false,
-                    DeliveryMethod = SmtpDeliveryMethod.Network,
-                    UseDefaultCredentials = false,
-                    Credentials = new NetworkCredential(cfgUserClient, cfgPasswordClient)
-                };
-                mailSender.Send(new System.Net.Mail.MailMessage(cfgEmailClient, receiver) { Subject = messageReponse.Subject, Body = messageReponse.BodyText });*/
-                using (GemBox.Email.Smtp.SmtpClient smtp = new GemBox.Email.Smtp.SmtpClient(cfgImapClient,25, ConnectionSecurity.None))
-                {
-                    smtp.Connect();
-                    smtp.Authenticate(cfgUserClient, cfgPasswordClient);
-                    smtp.SendMessage(messageReponse);
-                }
+            }
+        }
+        static bool readExistUIDLocalTxt(string uid)
+        {
+            string[] lines = System.IO.File.ReadAllLines(cfgPathTxtBase);
+            if(lines.ToList().Exists(x => x == uid))
+            {
                 return true;
             }
-            catch (Exception)
-            {
-                return false;
-            } 
+            return false;
         }
-    
-       static void procesarExcel(string filePath)
+
+        public static void funcionControlErrores(string pMensaje)
         {
-            try
-            {
-                SpreadsheetInfo.SetLicense("FREE-LIMITED-KEY");
-                ExcelFile workbook = ExcelFile.Load(filePath);
-                for (int sheetIndex = 0; sheetIndex < workbook.Worksheets.Count; sheetIndex++)
-                {
-                    ExcelWorksheet worksheet = workbook.Worksheets[sheetIndex];
-                    ExcelRow rowCliente = worksheet.Rows[0];
-                    ExcelRow rowClienteDireccion = worksheet.Rows[2];
-                    var valorCliente = rowCliente.Cells["C"].Value;
-                    var valorDireccionCliente = rowClienteDireccion.Cells["C"].Value;
-                    int limite = 200;
-                    var rangoContenido = worksheet.Cells.GetSubrange("A6", "J"+ limite);
-                    
-                    CellRangeEnumerator enumerator = rangoContenido.GetReadEnumerator();
-                    
-                    while (enumerator.MoveNext())
-                    {
-                        ExcelCell cell = enumerator.Current;
-                        if (cell.Value!= null){
-                            if (cell.Value.ToString().Contains("Moneda"))
-                            {
-                                  limite = cell.Row.Index;
-                                  break;
-                            }
-                        }
-                    }
-                    //Columnas de productos
-                    List<Tuple<string, decimal>> listaPedido= new List<Tuple<string, decimal>>();
-                    List<string> listaEnBlanco = new List<string>();
-                    var rangoCodigoProducto = worksheet.Cells.GetSubrange("A6", "A"+ limite);
-                    var rangoCantidadProducto = worksheet.Cells.GetSubrange("I6", "I" + limite);
-                    //rangoContenido = worksheet.Cells.GetSubrange("A6", "A" + limite);
-                    foreach (var celda in rangoCodigoProducto)
-                    {
-                        bool blankRegister = true;
-                        if ( celda!= null)
-                        {
-                            if(celda.ToString().Trim() != "")
-                            {
-                                var codigoProducto = celda.Value.ToString();
-                                var cantidadProducto = decimal.Parse(rangoCantidadProducto.Where(x => x.Column.Name == "I" && x.Row.Index == celda.Row.Index).FirstOrDefault().Value?.ToString());
-                                listaPedido.Add(new Tuple<string, decimal>(codigoProducto, cantidadProducto));
-                                blankRegister= false;
-                            } 
-                        }
-                        if (blankRegister)
-                        {
-                            listaEnBlanco.Add(celda.Column.Name + "" +celda.Row.Index.ToString());
-                        }
-                    }
-
-                    if(listaEnBlanco.Count>0)
-                    {
-                        //Notifcar registros en blancos
-                    }
-
-                    if (listaPedido.Count > 0)
-                    {
-                        //Procesar registros en blancos
-
-                    }
-                    else
-                    {
-                        //Notificar no hay detalle
-                    }
-
-                }
-            }
-            catch (Exception)
-            {
-
-                throw;
-            }
+            pMensaje = "Usuario: " + cfgUserClient + " - " + DateTime.Now.ToString() + " - " + pMensaje;
+            ProgramErrorClass programa = new ProgramErrorClass();
+            programa.SetLogMethod(
+                    new logDelegate(FormasLog.FileLog));
+            programa.Run(pMensaje);
         }
     }
 
-      class ImapListener : IDisposable
+    class ImapListener : IDisposable
     {
         public readonly ImapClient client;
         private Dictionary<string, ImapMessageInfo> messages;

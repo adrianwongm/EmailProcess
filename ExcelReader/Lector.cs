@@ -88,8 +88,8 @@ namespace ExcelReader
                     detallado.ContactoProveedor = valorContactoProveedor?.ToString();
                     detallado.Sucursal= valorSucursal?.ToString();
                     detallado.DireccionEntrega = valorDireccionEntrega?.ToString();
-                    detallado.OrdenCompra= valorOrdenCompra?.ToString();
-                    detallado.ClientSwiss= valorClienteSwiss?.ToString();//Validacion
+                    detallado.OrdenCompra = valorOrdenCompra?.ToString();
+                    detallado.ClientSwiss = valorClienteSwiss?.ToString();//Validacion
                     detallado.EntregarEn = valorEntregarEn?.ToString();
                     detallado.Email = email;
                     detallado.Detalles = new DetalleArchivoConauto[] { };//Validacion
@@ -179,15 +179,23 @@ namespace ExcelReader
                             ErrorList.Add($"El codigo de producto ({detalleValidar.CodigoSWISSOIL})" +
                                $" no es válido. Linea #{i}");
                         }
-                        if (!obj.validaCostoProducto(detalleValidar.CodigoSWISSOIL, "", "")) {
+                        if (!obj.validaCostoProducto(detalleValidar.CodigoSWISSOIL, "", "", out double costo)) {
                             ErrorList.Add($"El codigo de producto ({detalleValidar.CodigoSWISSOIL})" +
                                 $" no tiene costo. Linea #{i}");
                         }
-                        if (!obj.validaPrecioProducto(detalleValidar.CodigoSWISSOIL, "", "")) {
+                        else
+                        {
+                            detalleValidar.Costo= costo;
+                        }
+                        if (!obj.validaPrecioProducto (detalleValidar.CodigoSWISSOIL, "", "", out double precio)) {
                             ErrorList.Add($"El codigo de producto ({detalleValidar.CodigoSWISSOIL})" +
                                     $" no tiene precio. Linea #{i}");
                         }
-                         i++;
+                        else
+                        {
+                            detalleValidar.Precio = precio;
+                        }
+                        i++;
                         //detalleValidar.CodigoCONAUTO
                     }
 
@@ -209,7 +217,8 @@ namespace ExcelReader
             catch (Exception ex)
             {
                 ErrorList.Add($"Error en procesamiento ({ex.Message})");
-                return null;
+                ErrorProcessList = ErrorList;
+                return detallado;
             }
         }
     }
