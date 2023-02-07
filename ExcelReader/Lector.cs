@@ -12,18 +12,24 @@ namespace ExcelReader
 {
     public class Lector
     {
-        public static List<string> ErrorProcessList { get; set; }
+        public class ErroList
+        {
+            public string NombreHoja { get; set; }
+            public string MensajeError { get; set; }
+        }
+        public static List<ErroList> ErrorProcessList { get; set; }
         public Lector()
         {
-            ErrorProcessList = new List<string>();
+            ErrorProcessList = new List<ErroList>();
         }
     
-        public static ArchivoConauto.Detallado procesarExcel(string filePath, string email)
+        public static List<ArchivoConauto.Detallado> procesarExcel(string filePath, string email)
         {
             bool resp=false;
+            List<ArchivoConauto.Detallado> detallados = new List<ArchivoConauto.Detallado>();
             ArchivoConauto.Detallado detallado = new ArchivoConauto.Detallado();
-            ErrorProcessList = new List<string>(); 
-            List<string> ErrorList = new List<string>();
+            ErrorProcessList = new List<ErroList>(); 
+            List<ErroList> ErrorListado = new List<ErroList>();
             try
             { 
                 string celdaValorProveedor = ConfigurationManager.AppSettings["CeldaValorProveedor"];
@@ -46,9 +52,13 @@ namespace ExcelReader
 
                 SpreadsheetInfo.SetLicense("FREE-LIMITED-KEY");
                 ExcelFile workbook = ExcelFile.Load(filePath);
+                string NombreHojaActual = "";
+                string NombreArchivoActual = "";
                 for (int sheetIndex = 0; sheetIndex < workbook.Worksheets.Count; sheetIndex++)
                 {
                     ExcelWorksheet worksheet = workbook.Worksheets[sheetIndex];
+                    NombreHojaActual = worksheet.Name;
+                    //NombreArchivoActual ="";
                     var valorProveedor = worksheet.Cells[celdaValorProveedor].Value;
                     var valorContactoProveedor = worksheet.Cells[celdaValorContactoProveedor].Value;
                     var valorSucursal = worksheet.Cells[celdaValorSucursal].Value;
@@ -60,30 +70,51 @@ namespace ExcelReader
                     //int limiteActual = 1;
                     var rangoContenido = worksheet.Cells.GetSubrange(celdaRangoInicialValores, $"{ columnaRangoFinalValores}{ limiteMaximoValores}");
                     var columnaRangoIncialValores = rangoContenido.First().Column.Name;
-                   
-                     
-                    ErrorList= new List<string>();
+
+
+                    ErrorListado = new List<ErroList>();
                     ArchivoConautoOperations.Validator.verifcaTexto(valorProveedor, nameof(valorProveedor) +$" Cell:({celdaValorProveedor})");
-                    if (!string.IsNullOrEmpty(ArchivoConautoOperations.Validator._mensajeError))  ErrorList.Add(ArchivoConautoOperations.Validator._mensajeError) ;
+                    if (!string.IsNullOrEmpty(ArchivoConautoOperations.Validator._mensajeError))  ErrorListado.Add(new ErroList()  { 
+                                                                                                                              NombreHoja= NombreHojaActual , 
+                                                                                                                              MensajeError = ArchivoConautoOperations.Validator._mensajeError }) ;
 
                     ArchivoConautoOperations.Validator.verifcaTexto(valorContactoProveedor, nameof(valorContactoProveedor) + $" Cell:({celdaValorContactoProveedor})");
-                    if (!string.IsNullOrEmpty(ArchivoConautoOperations.Validator._mensajeError)) ErrorList.Add(ArchivoConautoOperations.Validator._mensajeError);
+                    if (!string.IsNullOrEmpty(ArchivoConautoOperations.Validator._mensajeError)) ErrorListado.Add(new ErroList() {
+                                                                                                                                NombreHoja = NombreHojaActual,
+                                                                                                                                MensajeError = ArchivoConautoOperations.Validator._mensajeError
+                                                                                                                            });
 
                     ArchivoConautoOperations.Validator.verifcaTexto(valorSucursal, nameof(valorSucursal) + $" Cell:({celdaValorSucursal})");
-                    if (!string.IsNullOrEmpty(ArchivoConautoOperations.Validator._mensajeError)) ErrorList.Add(ArchivoConautoOperations.Validator._mensajeError);
+                    if (!string.IsNullOrEmpty(ArchivoConautoOperations.Validator._mensajeError)) ErrorListado.Add(new ErroList()   {
+                                                                                                                                NombreHoja = NombreHojaActual,
+                                                                                                                                MensajeError = ArchivoConautoOperations.Validator._mensajeError
+                                                                                                                            });
 
                     ArchivoConautoOperations.Validator.verifcaTexto(valorDireccionEntrega, nameof(valorDireccionEntrega) + $" Cell:({celdaValorDireccionEntrega})");
-                    if (!string.IsNullOrEmpty(ArchivoConautoOperations.Validator._mensajeError)) ErrorList.Add(ArchivoConautoOperations.Validator._mensajeError);
+                    if (!string.IsNullOrEmpty(ArchivoConautoOperations.Validator._mensajeError)) ErrorListado.Add(new ErroList()  {
+                                                                                                                                NombreHoja = NombreHojaActual,
+                                                                                                                                MensajeError = ArchivoConautoOperations.Validator._mensajeError
+                                                                                                                            });
 
                     ArchivoConautoOperations.Validator.verifcaTexto(valorOrdenCompra, nameof(valorOrdenCompra) + $" Cell:({celdaValorOrdenCompra})");
-                    if (!string.IsNullOrEmpty(ArchivoConautoOperations.Validator._mensajeError)) ErrorList.Add(ArchivoConautoOperations.Validator._mensajeError);
+                    if (!string.IsNullOrEmpty(ArchivoConautoOperations.Validator._mensajeError)) ErrorListado.Add(new ErroList()  {
+                                                                                                                                NombreHoja = NombreHojaActual,
+                                                                                                                                MensajeError = ArchivoConautoOperations.Validator._mensajeError
+                                                                                                                            });
 
                     ArchivoConautoOperations.Validator.verifcaTexto(valorClienteSwiss, nameof(valorClienteSwiss) + $" Cell:({celdaValorClienteSwiss})");
-                    if (!string.IsNullOrEmpty(ArchivoConautoOperations.Validator._mensajeError)) ErrorList.Add(ArchivoConautoOperations.Validator._mensajeError);
+                    if (!string.IsNullOrEmpty(ArchivoConautoOperations.Validator._mensajeError)) ErrorListado.Add(new ErroList()  {
+                                                                                                                                NombreHoja = NombreHojaActual,
+                                                                                                                                MensajeError = ArchivoConautoOperations.Validator._mensajeError
+                                                                                                                            });
 
                     ArchivoConautoOperations.Validator.verifcaTexto(valorEntregarEn, nameof(valorEntregarEn) + $" Cell:({celdaValorEntregarEn})");
-                    if (!string.IsNullOrEmpty(ArchivoConautoOperations.Validator._mensajeError)) ErrorList.Add(ArchivoConautoOperations.Validator._mensajeError);
-                  
+                    if (!string.IsNullOrEmpty(ArchivoConautoOperations.Validator._mensajeError)) ErrorListado.Add(new ErroList()  {
+                                                                                                                                NombreHoja = NombreHojaActual,
+                                                                                                                                MensajeError = ArchivoConautoOperations.Validator._mensajeError
+                                                                                                                            });
+                    detallado = new ArchivoConauto.Detallado();
+                    detallado.HojaOrigen = NombreHojaActual;
                     detallado.Proveedor = valorProveedor?.ToString();
                     detallado.ContactoProveedor = valorContactoProveedor?.ToString();
                     detallado.Sucursal= valorSucursal?.ToString();
@@ -116,29 +147,40 @@ namespace ExcelReader
                         if (celda.Column.Name == columnaCodigoCONAUTO) 
                         {
                             ArchivoConautoOperations.Validator.verifcaTexto(celda.Value, nameof(columnaCodigoCONAUTO).Replace("columna", "") + $" Cell:({celda.Column.Name}{celda.Row.Name})");
-                            if (!string.IsNullOrEmpty(ArchivoConautoOperations.Validator._mensajeError)) { ErrorList.Add(ArchivoConautoOperations.Validator._mensajeError); }
+                            if (!string.IsNullOrEmpty(ArchivoConautoOperations.Validator._mensajeError)) { ErrorListado.Add(new ErroList()  {
+                                                                                                                            NombreHoja = NombreHojaActual,
+                                                                                                                            MensajeError = ArchivoConautoOperations.Validator._mensajeError}); }
                             else { detalle.CodigoCONAUTO = celda?.StringValue; }
                         } 
                         if (celda.Column.Name == columnaCodigoSWISSOIL) 
                         {
                             ArchivoConautoOperations.Validator.verifcaTexto(celda.Value, nameof(columnaCodigoSWISSOIL).Replace("columna", "") + $" Cell:({celda.Column.Name}{celda.Row.Name})");
-                            if (!string.IsNullOrEmpty(ArchivoConautoOperations.Validator._mensajeError)) { ErrorList.Add(ArchivoConautoOperations.Validator._mensajeError); }
+                            if (!string.IsNullOrEmpty(ArchivoConautoOperations.Validator._mensajeError))   { ErrorListado.Add(new ErroList()
+                                                                                                                        {
+                                                                                                                            NombreHoja = NombreHojaActual,
+                                                                                                                            MensajeError = ArchivoConautoOperations.Validator._mensajeError }); }
                             else { detalle.CodigoSWISSOIL = celda?.StringValue; } 
                         }
                         if (celda.Column.Name == columnaDescripcionProducto) 
                         {
                             ArchivoConautoOperations.Validator.verifcaTexto(celda.Value, nameof(columnaDescripcionProducto).Replace("columna", "") + $" Cell:({celda.Column.Name}{celda.Row.Name})");
-                            if (!string.IsNullOrEmpty(ArchivoConautoOperations.Validator._mensajeError)) { ErrorList.Add(ArchivoConautoOperations.Validator._mensajeError); }
+                            if (!string.IsNullOrEmpty(ArchivoConautoOperations.Validator._mensajeError))   {  ErrorListado.Add(new ErroList()  {
+                                                                                                                            NombreHoja = NombreHojaActual,
+                                                                                                                            MensajeError = ArchivoConautoOperations.Validator._mensajeError  });  }
                             else  { detalle.DescripcionProducto = celda?.StringValue;} 
                         }
                         if (celda.Column.Name == columnaEmpaque) {
                             ArchivoConautoOperations.Validator.verifcaTexto(celda.Value, nameof(columnaEmpaque).Replace("columna", "") + $" Cell:({celda.Column.Name}{celda.Row.Name})");
-                            if (!string.IsNullOrEmpty(ArchivoConautoOperations.Validator._mensajeError)) { ErrorList.Add(ArchivoConautoOperations.Validator._mensajeError); }
+                            if (!string.IsNullOrEmpty(ArchivoConautoOperations.Validator._mensajeError))   {  ErrorListado.Add(new ErroList()  {
+                                                                                                                            NombreHoja = NombreHojaActual,
+                                                                                                                            MensajeError = ArchivoConautoOperations.Validator._mensajeError  });  }
                             else { detalle.Empaque = celda?.StringValue; } 
                         }
                         if (celda.Column.Name == columnaCantidad) { 
                             ArchivoConautoOperations.Validator.verifcaNumeroDouble(celda.Value, nameof(columnaCantidad).Replace("columna", "") + $" Cell:({celda.Column.Name}{celda.Row.Name})");
-                            if (!string.IsNullOrEmpty(ArchivoConautoOperations.Validator._mensajeError)) { ErrorList.Add(ArchivoConautoOperations.Validator._mensajeError); }
+                            if (!string.IsNullOrEmpty(ArchivoConautoOperations.Validator._mensajeError))   {  ErrorListado.Add(new ErroList()  {  
+                                                                                                                            NombreHoja = NombreHojaActual,
+                                                                                                                            MensajeError = ArchivoConautoOperations.Validator._mensajeError  });  }
                             else { detalle.Cantidad = celda?.DoubleValue; } 
                         }
 
@@ -149,25 +191,34 @@ namespace ExcelReader
                             orden++;
                         } 
                     }
-                    if(detalles.Count<= 0) { ErrorList.Add("El archivo no tiene detalles"); }
+                    ArchivoConautoOperations.Validator._mensajeError = "";
+                    if (detalles.Count<= 0) {   ErrorListado.Add(new ErroList()  {
+                            NombreHoja = NombreHojaActual,
+                            MensajeError = "No hay detalles de productos a procesar." });
+                    }
                     detallado.Detalles = detalles.ToArray();
                     
-                    if (ErrorList.Count > 0)
+                    if (ErrorListado.Count > 0)
                     {
-                        ErrorProcessList = ErrorList;
-                        return detallado;
+                        ErrorProcessList.AddRange(ErrorListado);
+                        detallados.Add(detallado);
+                        return detallados;
                     }
 
                     TPCS_BLL obj = new TPCS_BLL();
                     //Validar Clientes
                     if(!obj.validarCliente(detallado.ClientSwiss, "", ""))
                     {
-                        ErrorList.Add($"El codigo de cliente {detallado.ClientSwiss} , no es válido.");
+                        ErrorListado.Add(new ErroList() {
+                            NombreHoja = NombreHojaActual,
+                            MensajeError = $"El codigo de cliente {detallado.ClientSwiss} , no es válido." });
                     }
-                    if(!obj.validarDireccionCliente(detallado.ClientSwiss, detallado.EntregarEn, "", ""))
+                    if (detallado.EntregarEn != "00" && !obj.validarDireccionCliente(detallado.ClientSwiss, detallado.EntregarEn, "", ""))
                     {
-                        ErrorList.Add($"El codigo de entrega ({detallado.EntregarEn}) del" +
-                            $" codigo de cliente {detallado.ClientSwiss} no es válido.");
+                        ErrorListado.Add(new ErroList()  {
+                            NombreHoja = NombreHojaActual,
+                            MensajeError = $"El codigo de entrega ({detallado.EntregarEn}) del" +
+                            $" codigo de cliente {detallado.ClientSwiss} no es válido."  });
                     }
                     
                     //Validar detalles 
@@ -176,20 +227,26 @@ namespace ExcelReader
                     foreach (var detalleValidar in detallado.Detalles)
                     {
                         if (!obj.validaCodigoProducto(detalleValidar.CodigoSWISSOIL, "", "")) {
-                            ErrorList.Add($"El codigo de producto ({detalleValidar.CodigoSWISSOIL})" +
-                               $" no es válido. Linea #{i}");
+                            ErrorListado.Add(new ErroList()   {
+                                NombreHoja = NombreHojaActual,
+                                MensajeError = $"El codigo de producto ({detalleValidar.CodigoSWISSOIL})" +
+                               $" no es válido. Linea #{i}"   });
                         }
                         if (!obj.validaCostoProducto(detalleValidar.CodigoSWISSOIL, "", "", out double costo)) {
-                            ErrorList.Add($"El codigo de producto ({detalleValidar.CodigoSWISSOIL})" +
-                                $" no tiene costo. Linea #{i}");
+                            ErrorListado.Add(new ErroList()  {
+                                NombreHoja = NombreHojaActual,
+                                MensajeError =  $"El codigo de producto ({detalleValidar.CodigoSWISSOIL})" +
+                                $" no tiene costo. Linea #{i}"   });
                         }
                         else
                         {
                             detalleValidar.Costo= costo;
                         }
                         if (!obj.validaPrecioProducto (detalleValidar.CodigoSWISSOIL, "", "", out double precio)) {
-                            ErrorList.Add($"El codigo de producto ({detalleValidar.CodigoSWISSOIL})" +
-                                    $" no tiene precio. Linea #{i}");
+                            ErrorListado.Add(new ErroList()  {
+                                NombreHoja = NombreHojaActual,
+                                MensajeError = $"El codigo de producto ({detalleValidar.CodigoSWISSOIL})" +
+                                    $" no tiene precio. Linea #{i}" });
                         }
                         else
                         {
@@ -198,27 +255,46 @@ namespace ExcelReader
                         i++;
                         //detalleValidar.CodigoCONAUTO
                     }
-
-                    if (ErrorList.Count > 0)
+                    bool hasError = false;
+                    if (ErrorListado.Count > 0)
                     {
-                        ErrorProcessList = ErrorList;
-                        return detallado;
+                        ErrorProcessList.AddRange(ErrorListado);
+                        hasError = true;
+                        //return detallado;
                     }
 
                     var registro = detallado.ToAS400(usuario, 1);
-                    resp = obj.insertaRegistroTPCS(registro,"",""); 
+                    registro.TCESTA = (hasError == true ? 9 : 1);
+                    detallados.Add(detallado);
+                    try
+                    { 
+                        resp = obj.insertaRegistroTPCS(registro, "", "");
+                    }
+                    catch (Exception ex)
+                    {
+                        ErrorListado.Add(new ErroList()
+                        {
+                            NombreHoja = NombreHojaActual,
+                            MensajeError = $"Error en procesamiento ({ex.Message})"
+                        });
+                        ErrorProcessList.AddRange(ErrorListado);
+                    }
                 }
-                if (resp == true)
+                if (detallados != null)
                 {
-                    return detallado;
+                    return detallados;
                 }
-                return null;
+                return new List<ArchivoConauto.Detallado>();
             }
             catch (Exception ex)
             {
-                ErrorList.Add($"Error en procesamiento ({ex.Message})");
-                ErrorProcessList = ErrorList;
-                return detallado;
+                ErrorListado.Add(new ErroList()
+                {
+                    NombreHoja = string.Empty,
+                    MensajeError =  $"Error en procesamiento ({ex.Message})"
+                });
+                ErrorProcessList.AddRange(ErrorListado);
+                return detallados;
             }
         }
     }

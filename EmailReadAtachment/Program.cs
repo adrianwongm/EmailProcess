@@ -134,23 +134,33 @@ namespace EmailReadAtachment
                                     var receiver = message.From[0].Address;
                                     var respuestaEnvio = NotificationEmail.RespuestaEmail(receiver, ResponseEmailType.Recibido, null, null);
                                     //Validar Excel y procesar Excel
-                                    var archivoConautoDetallado = ExcelReader.Lector.procesarExcel(excel.FullName, receiver);
+                                    var archivoConautoDetallados = ExcelReader.Lector.procesarExcel(excel.FullName, receiver);
                                     //Notificacion de envio o error por email
-                                    if (ExcelReader.Lector.ErrorProcessList.Count() > 0)
-                                    {
-                                        var respuestaError = NotificationEmail.RespuestaEmail(receiver, ResponseEmailType.Error, null, ExcelReader.Lector.ErrorProcessList);
-                                        foreach (var errorProcess in ExcelReader.Lector.ErrorProcessList)
+                                        var codigoHojasErrores = ExcelReader.Lector.ErrorProcessList
+                                            //.Where(x => !string.IsNullOrEmpty(x.NombreHoja))
+                                            .Select(p => p.NombreHoja).Distinct();
+
+                                        var archivoOCConautoDetallado_Error = archivoConautoDetallados.Where(x => codigoHojasErrores.Contains(x.HojaOrigen)).Select(p => p.OrdenCompra).ToList();
+                                        if (archivoOCConautoDetallado_Error?.Count > 0)
                                         {
-                                            funcionControlErrores($"Orden {archivoConautoDetallado?.OrdenCompra} : " +  errorProcess);
-                                        }
-                                       
-                                    }
-                                    else
-                                    {
+                                            var respuestaError = NotificationEmail.RespuestaEmail(receiver, ResponseEmailType.Error,
+                                                        string.Join(", ", archivoOCConautoDetallado_Error.ToArray()),
+                                                        ExcelReader.Lector.ErrorProcessList.Select(x => $"{(string.IsNullOrEmpty(x.NombreHoja) ? "El documento " : "La hoja " + x.NombreHoja)}  presenta: {x.MensajeError}").ToList()
+                                                        );
+                                            foreach (var errorProcess in ExcelReader.Lector.ErrorProcessList)
+                                            {
+                                                var archivoConautoDetallado = archivoConautoDetallados.Where(x => x.HojaOrigen == errorProcess.NombreHoja).FirstOrDefault();
+                                                funcionControlErrores($"Orden {archivoConautoDetallado?.OrdenCompra} : " + errorProcess?.NombreHoja??"" + " :" + errorProcess?.MensajeError??"");
+                                            }
+                                        } 
                                         //Correo aceptado pendiente de aprobacion final
-                                        var respuestaProcesado = NotificationEmail.RespuestaEmail(receiver, ResponseEmailType.Procesado, 
-                                                    archivoConautoDetallado?.OrdenCompra, null);
-                                    }
+                                        var archivoOCConautoDetallado_OK = archivoConautoDetallados.Where(x => !codigoHojasErrores.Contains(x.HojaOrigen)).Select(p=>p.OrdenCompra).ToList();
+                                        if(archivoOCConautoDetallado_OK?.Count>0)
+                                        { 
+                                            var respuestaProcesado = NotificationEmail.RespuestaEmail(receiver, ResponseEmailType.Procesado,
+                                                            string.Join(", ", archivoOCConautoDetallado_OK.ToArray()), null);
+                                        }
+                                   
                                 }
                             }
 

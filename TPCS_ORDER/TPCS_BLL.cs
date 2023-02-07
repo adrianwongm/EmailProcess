@@ -319,7 +319,7 @@ namespace TPCS_ORDER
                     };
 
                     OdbcDataReader readerVerificacion = (new OdbcCommand("SELECT CFPROD,  CFTLVL + CFPLVL    FROM CMFL01  WHERE  CFPROD  = '" +
-                                                                        codigoProducto + "'")
+                                                                        codigoProducto + "' and  CFCSET= 2   and CFCBKT   = 0 and CFFAC ='01'")
                     {
                         CommandType = CommandType.Text,
                         Connection = conexion

@@ -26,6 +26,8 @@ namespace ExcelReader
             
         }
 
+        public string HojaOrigen { get; set; }
+        public string ArchivoOrigen { get; set; }
 
 
     }

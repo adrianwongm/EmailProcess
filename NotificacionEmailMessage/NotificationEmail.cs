@@ -59,6 +59,7 @@ namespace NotificacionEmailMessage
                 {
                     messageReponse.Subject = cfgSubjectResponseForError;
                     var bodyResponse = cfgBodyTextForError;
+                    bodyResponse = bodyResponse + Environment.NewLine +  (string.IsNullOrEmpty(ordenCompra) ? "" : $" Dentro de las siguientes ordenes de compra: {ordenCompra} hay estas observaciones:   ");
                     bodyResponse = bodyResponse + Environment.NewLine + string.Join(Environment.NewLine, listadoErrores);
                     messageReponse.BodyText = bodyResponse;
                 }
