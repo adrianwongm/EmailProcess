@@ -42,6 +42,7 @@ namespace ExcelReader
         public double? Cantidad { get; set; }
         public double Precio { get; set; }
         public double Costo { get; set; }
+        public int Estado { get; set; }     
     }
 
     public class ArchivoConautoOperations

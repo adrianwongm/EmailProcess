@@ -55,7 +55,7 @@ internal static class ConverterHelpers
                  TDCANT = Convert.ToDecimal(item.Cantidad??0d),
                  TDCDCL = item.CodigoCONAUTO,
                  TDCDSW = item.CodigoSWISSOIL,
-                 TDESTA = estado,
+                 TDESTA = item.Estado,
                  TDCOST = Convert.ToDecimal(item.Costo),
                  TDPREC = Convert.ToDecimal(item.Precio),
             });

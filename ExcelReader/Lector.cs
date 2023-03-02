@@ -226,13 +226,16 @@ namespace ExcelReader
                     int i = 1;
                     foreach (var detalleValidar in detallado.Detalles)
                     {
+                        detalleValidar.Estado = 1;
                         if (!obj.validaCodigoProducto(detalleValidar.CodigoSWISSOIL, "", "")) {
+                            detalleValidar.Estado = 0;
                             ErrorListado.Add(new ErroList()   {
                                 NombreHoja = NombreHojaActual,
                                 MensajeError = $"El codigo de producto ({detalleValidar.CodigoSWISSOIL})" +
                                $" no es válido. Linea #{i}"   });
                         }
                         if (!obj.validaCostoProducto(detalleValidar.CodigoSWISSOIL, "", "", out double costo)) {
+                            detalleValidar.Estado = 0;
                             ErrorListado.Add(new ErroList()  {
                                 NombreHoja = NombreHojaActual,
                                 MensajeError =  $"El codigo de producto ({detalleValidar.CodigoSWISSOIL})" +
@@ -243,6 +246,7 @@ namespace ExcelReader
                             detalleValidar.Costo= costo;
                         }
                         if (!obj.validaPrecioProducto (detalleValidar.CodigoSWISSOIL, "", "", out double precio)) {
+                            detalleValidar.Estado = 0;
                             ErrorListado.Add(new ErroList()  {
                                 NombreHoja = NombreHojaActual,
                                 MensajeError = $"El codigo de producto ({detalleValidar.CodigoSWISSOIL})" +
@@ -264,7 +268,7 @@ namespace ExcelReader
                     }
 
                     var registro = detallado.ToAS400(usuario, 1);
-                    registro.TCESTA = (hasError == true ? 9 : 1);
+                    registro.TCESTA = (hasError == true ? 0 : 1);
                     detallados.Add(detallado);
                     try
                     { 
